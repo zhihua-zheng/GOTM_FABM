@@ -166,13 +166,5 @@ end
 
 fclose(fileID);
 
-%% read me file
 
-fileID = fopen('readme_inf.dat','w');
-
-info = ''
-fprintf(fileID,'%s',info);
-
-
-fclose(fileID);
 
