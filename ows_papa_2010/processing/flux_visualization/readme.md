@@ -8,7 +8,7 @@ sur_hf - heat flux;
 
 sur_mfx - momentum flux in x direction;
 
-sur_mfy - momentum flux in x direction;
+sur_mfy - momentum flux in y direction;
 
 sur_nsw - net shortwave radiation;
 
