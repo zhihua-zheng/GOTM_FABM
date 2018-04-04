@@ -1,6 +1,6 @@
 % make forcing files for new GOTM ows_papa_2010 test case
 %
-% by Zhihua Zheng (UW/APL), updated on Apr. 2 2018
+% by Zhihua Zheng (UW/APL), updated on Apr. 3 2018
 % 
 % load meteological observation data from PMEL OWS P station mooring
 % ---------------------------------------------------
