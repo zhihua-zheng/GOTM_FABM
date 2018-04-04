@@ -1,6 +1,6 @@
 % make forcing files for new GOTM ows_papa_2010 test case
 %
-% by Zhihua Zheng (UW/APL), Mar. 25 2018
+% by Zhihua Zheng (UW/APL), updated on Apr. 2 2018
 % 
 % load meteological observation data from PMEL OWS P station mooring
 % ---------------------------------------------------
@@ -24,11 +24,10 @@
 %         P - sea level barometric pressure (hPa)
 %       lat - mooring latitude (degree)
 %       lon - mooring longitude (degree)
-%      time - datenumbers for measurement (UTC)
-%    time_r - truncated datenumbers for measurement (UTC)
-%      date - date strings for measurement (UTC)
-%    prof_t - datenumbers for profile measurement (UTC)
-% prof_date - date strings for profile measurement (UTC)
+%      time - datenumbers for measurements (UTC)
+%      date - date strings for measurements (UTC)
+%    prof_t - datenumbers for profile measurements (UTC)
+% prof_date - date strings for profile measurements (UTC)
 
 % Original profile time series has 94 columns, to exclude the bad data in
 % salinity profile, the last 5 columns are abandoned, therefore only the 
@@ -46,7 +45,7 @@
 
 ruin_day = find(spd<100,1,'last'); 
 
-% hence truncate all the data before ruin_day
+% truncate all the data before ruin_day
 
 spd_r = interp1(time(spd<100),spd(spd<100),time(1:ruin_day));
 u_r = interp1(time(u<100),u(u<100),time(1:ruin_day));
@@ -58,8 +57,8 @@ Rs_r = interp1(time(Rs<1000),Rs(Rs<1000),time(1:ruin_day));
 Rl_r = interp1(time(Rl<1000),Rl(Rl<1000),time(1:ruin_day));
 P_r = interp1(time(P<10000),P(P<10000),time(1:ruin_day));
 wd_r = interp1(time(w_dir<=360),w_dir(w_dir<=360),time(1:ruin_day));
-time_r = time(1:ruin_day);
-date_r = date(1:ruin_day,:);
+time_r = time(1:ruin_day);  % truncated datenumbers for measurements (UTC)
+date_r = date(1:ruin_day,:);% truncated strings for measurements (UTC)
 
 
 [T, Z] = meshgrid(prof_t,depth_s);
@@ -102,18 +101,58 @@ yd = date2doy(time_r)-1; % using function date2doy from File Exchange
 %-----------------------
 
 % compute net short wave heat flux
-nsw = swhf(yd,date_vec(:,1),lon*ones(size(time_r)),lat*ones(size(time_r)),Rs_r);
+nsw = swhf(yd,date_vec(:,1),(360-lon)*ones(size(time_r)),lat*ones(size(time_r)),Rs_r);
+%---- Note to change the longitude into formate of West positive degree
+%---- Note the operating time in the subroutine of swhf, soradna1 (no-sky
+% solar radiation) is in UTC format, therefore the time zone shifting must 
+% be perfomed after here.
 
 % compute net long wave heat flux
 nlw = lwhf(ts_r,Rl_r,Rs_r);
 
-% compute total surfac heat flux (advective heat flux is omitted)
-hf = hlb + hsb - nsw - nlw;
+% compute total surfac heat flux (shortwave heat flux and advective heat flux are omitted)
+hf = -hlb - hsb + nlw;
+
+
+%% Time Conversion
+
+% correction for time zone shift
+UTC_time = datetime(time_r,'ConvertFrom','datenum','TimeZone','UTC');
+Papa_time = datetime(UTC_time,'TimeZone','-10:00');
+
+% date number, date string and date vector for papa station local time
+time_r = datenum(Papa_time);
+date_r = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS');
+date_vec = datevec(date_r); 
+
+% do it again for prof_t
+UTC_time = datetime(prof_t,'ConvertFrom','datenum','TimeZone','UTC');
+Papa_time = datetime(UTC_time,'TimeZone','-10:00');
+prof_t = datenum(Papa_time);
+prof_date = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS');
+
+% Hereafter all the truncated time related variables are in local time zone.
+
+%% Diurnal SWR check
+
+diurnal = ones(3000,24)*NaN; % rearrange for every hour (0-23)
+
+for i = 1:24
+    
+    inx = find(date_vec(:,4) == i-1);
+    diurnal(1:size(inx),i) = Rs_r(inx);
+    
+end
+
+one_day = nanmean(diurnal);
+
+plot(one_day)
+% plot(circshift(one_day,-10))
 
 
 %% momentum flux
 
-fileID = fopen('momentumflux.dat','w');
+fileID = fopen('./forcing_files/momentumflux.dat','w');
 H = [cellstr(date_r) num2cell(tau_x) num2cell(tau_y)];
 formatSpec = '%s  % 8.6e % 8.6e\n';
 
@@ -123,9 +162,12 @@ end
 
 fclose(fileID);
 
+copyfile('./forcing_files/momentumflux.dat', './forcing_files/momentumflux_file.dat');
+% one dot (.) - present folder, two dots (..) - parent of current folder
+
 %% heat flux
 
-fileID = fopen('heatflux.dat','w');
+fileID = fopen('./forcing_files/heatflux.dat','w');
 H = [cellstr(date_r) num2cell(hf)];
 formatSpec = '%s   % 8.6e\n';
 
@@ -135,9 +177,12 @@ end
 
 fclose(fileID);
 
+copyfile('./forcing_files/heatflux.dat', './forcing_files/heatflux_file.dat');
+copyfile('./forcing_files/momentumflux.dat', './forcing_files/heatflux.dat.kb');
+
 %% sea surface temparature (sst) file
 
-fileID = fopen('sst.dat','w');
+fileID = fopen('./forcing_files/sst.dat','w');
 H = [cellstr(date_r) num2cell(ts_r)];
 formatSpec = '%s %6.3f\n';
 
@@ -147,9 +192,11 @@ end
 
 fclose(fileID);
 
+copyfile('./forcing_files/heatflux.dat', './forcing_files/sst_file.dat');
+
 %% net short wave radiation (swr) file
 
-fileID = fopen('swr.dat','w');
+fileID = fopen('./forcing_files/swr.dat','w');
 H = [cellstr(date_r) num2cell(nsw)];
 formatSpec = '%s  % 8.6e\n';
 
@@ -159,9 +206,11 @@ end
 
 fclose(fileID);
 
+copyfile('./forcing_files/heatflux.dat', './forcing_files/swr_file.dat');
+
 %% salinity profile
 
-fileID = fopen('s_prof.dat','w');
+fileID = fopen('./forcing_files/s_prof.dat','w');
 prof_date = string(prof_date);
 
 for i = 1:size(prof_t,1)
@@ -172,9 +221,11 @@ end
 
 fclose(fileID);
 
+copyfile('./forcing_files/heatflux.dat', './forcing_files/s_prof_file.dat');
+
 %% temperature profile
 
-fileID = fopen('t_prof.dat','w');
+fileID = fopen('./forcing_files/t_prof.dat','w');
 
 for i = 1:size(prof_t,1)
     
@@ -183,6 +234,8 @@ for i = 1:size(prof_t,1)
 end
 
 fclose(fileID);
+
+copyfile('./forcing_files/heatflux.dat', './forcing_files/t_prof_file.dat');
 
 %% visualization of flux time series for comparison
 
@@ -194,10 +247,10 @@ line(time_r,zeros(size(time_r)),'LineWidth',.6,'Color',[.3 .4 .3])
   datetick('x','yyyy')
   ylabel('surface heat flux ($$W/m^2$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,'XLim',[datenum('June 15, 2010') datenum('June 16, 2016')],...
+  setDateAxes(gca,'XLim',[datenum('June 14, 2010') datenum('June 16, 2016')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   
-  export_fig ('sur_hf','-eps','-transparent','-painters')
+  export_fig ('./figs/sur_hf','-pdf','-transparent','-painters')
 
 
   
@@ -209,10 +262,10 @@ line(time_r,zeros(size(time_r)),'LineWidth',.6,'Color',[.3 .4 .3])
   datetick('x','yyyy')
   ylabel('x - momentum flux ($$N/m^2$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,'XLim',[datenum('June 15, 2010') datenum('June 16, 2016')],...
+  setDateAxes(gca,'XLim',[datenum('June 14, 2010') datenum('June 16, 2016')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   
-  export_fig ('sur_mfx','-eps','-transparent','-painters')
+  export_fig ('./figs/sur_mfx','-pdf','-transparent','-painters')
 %-----------
 figure('position', [0, 0, 1000, 200])
 line(time_r,tau_y,'LineWidth',.4,'Color',[.6 .7 .4])
@@ -221,10 +274,10 @@ line(time_r,zeros(size(time_r)),'LineWidth',.6,'Color',[.3 .4 .3])
   datetick('x','yyyy')
   ylabel('y - momentum flux ($$N/m^2$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,'XLim',[datenum('June 15, 2010') datenum('June 16, 2016')],...
+  setDateAxes(gca,'XLim',[datenum('June 14, 2010') datenum('June 16, 2016')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   
-  export_fig ('sur_mfy','-eps','-transparent','-painters')
+  export_fig ('./figs/sur_mfy','-pdf','-transparent','-painters')
 
   
   
@@ -236,10 +289,10 @@ line(time_r,ts_r,'LineWidth',.4,'Color',[.8 .4 .2])
   datetick('x','yyyy')
   ylabel('sea surface temperature ($$^{\circ}C$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,'XLim',[datenum('June 15, 2010') datenum('June 16, 2016')],...
+  setDateAxes(gca,'XLim',[datenum('June 14, 2010') datenum('June 16, 2016')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   
-  export_fig ('sur_t','-eps','-transparent','-painters')
+  export_fig ('./figs/sur_t','-pdf','-transparent','-painters')
 
   
   
@@ -247,15 +300,14 @@ line(time_r,ts_r,'LineWidth',.4,'Color',[.8 .4 .2])
 % net short wave radiation
 figure('position', [0, 0, 1000, 200])
 line(time_r,nsw,'LineWidth',.4,'Color',[.6 .2 .4])
-%line(time_r,zeros(size(time_r)),'LineWidth',.6,'Color',[.3 .4 .3])
   box on
   datetick('x','yyyy')
   ylabel('net shortwave radiation ($$W/m^2$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,'XLim',[datenum('June 15, 2010') datenum('June 16, 2016')],...
+  setDateAxes(gca,'XLim',[datenum('June 14, 2010') datenum('June 16, 2016')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   
-  export_fig ('sur_nsw','-eps','-transparent','-painters')
+  export_fig ('./figs/sur_nsw','-pdf','-transparent','-painters')
   
   
 % salinity profiles
@@ -264,7 +316,7 @@ figure('position', [0, 0, 900, 250])
 cnum = 15;
 CL = [min(min(sprof_r)) max(max(sprof_r))];
 conts = linspace(CL(1),CL(2),cnum);
-cmocean('haline')
+cmocean('-haline')
 [T, Z] = meshgrid(prof_t,depth_s);
 contourf(T,Z,sprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   caxis(CL);
@@ -281,12 +333,12 @@ contourf(T,Z,sprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   h.Label.FontSize = 14;
   set(h,'TickLabelInterpreter','latex','fontsize',9);
 
-  export_fig ('prof_s','-eps','-transparent','-painters')
+  export_fig ('./figs/prof_s','-pdf','-transparent','-painters')
   
   
   
-%% temperature profiles
-figure('position', [0, 0, 800, 200])
+% temperature profiles
+figure('position', [0, 0, 900, 250])
 
 cnum = 15;
 CL = [min(min(tprof_r)) max(max(tprof_r))];
@@ -308,4 +360,6 @@ contourf(T,Z,tprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   h.Label.FontSize = 14;
   set(h,'TickLabelInterpreter','latex','fontsize',9);
   
-  export_fig ('prof_t','-eps','-transparent','-painters')
+  export_fig ('./figs/prof_t','-pdf','-transparent','-painters')
+  
+  
