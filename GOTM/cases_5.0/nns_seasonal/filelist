@@ -1,0 +1,14 @@
+nns_seasonal/timestamp
+nns_seasonal/filelist
+nns_seasonal/README
+nns_seasonal/Makefile
+nns_seasonal/nns_seasonal.xml
+nns_seasonal/eps_fly.dat
+nns_seasonal/eps_mst.dat
+nns_seasonal/meteo_dana.dat
+nns_seasonal//output.yaml
+nns_seasonal/pressure.dat
+nns_seasonal/sprof.dat
+nns_seasonal/tprof.dat
+nns_seasonal/velprof.dat
+nns_seasonal/w_adv.dat
