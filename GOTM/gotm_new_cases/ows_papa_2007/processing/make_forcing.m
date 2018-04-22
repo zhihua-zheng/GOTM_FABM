@@ -4,39 +4,44 @@
 % 
 % load meteological observation data from PMEL OWS P station mooring
 % ---------------------------------------------------
-%       w_u - x component wind velocity (m/s)
-%       w_v - y component wind velocity (m/s)
-%     w_spd - total wind speed (m/s)
-%     w_dir - wind direction (clockwise to the North), in oceanographic sense (degree)
-%    z_wind - wind velocity measurement height (m)
-%     t_air - air temperature (degree centigrade)
-%      z_ta - air temperature measurement height (m)
-%        rh - relative humidity (%)
-%      z_rh - relative humidity measurement height (m)
-%        Rs - downward shortwave radiation (W/m^2)
-%        Rl - downward longwave radiation (W/m^2)
-%      rain - pricipitation rate (mm/hr)
-%         P - sea level barometric pressure (hPa)
-%       sst - sea surface temperature (degree centigrade)
-%       sss - sea surface salinity (PSU)
-%       ssd - sea surface potential density (sigma-theta) (kg/m^3)
-%     sprof - salinity profile (PSU)
-%     tprof - temperature profile (degree centigrade)
-%   depth_t - depth for T profile (m)
-%   depth_s - depth for S profile (m)
-%   cur_spd - total current speed (cm/s)
-%     cur_u - x component current velocity (cm/s)
-%     cur_v - y component current velocity (cm/s)
-%   cur_dir - current direction (clockwise to the North), in oceanographic sense (degree)
-% depth_cur - depth for current profile (m)
-%       lat - mooring latitude (degree)
-%       lon - mooring longitude (degree)
-%      time - datenumbers for measurements (UTC)
-%      date - date strings for measurements (UTC)
-% time_prof - datenumbers for profile measurements (UTC)
-% date_prof - date strings for profile measurements (UTC)
-% time_rain - datenumbers for precipitation measurements (UTC)
-% date_rain - date strings for precipitation measurements (UTC)
+% %        w_u - x component wind velocity (m/s)
+% %        w_v - y component wind velocity (m/s)
+% %      w_spd - total wind speed (m/s)
+% %      w_dir - wind direction (clockwise to the North), in oceanographic sense (degree)
+% %     z_wind - wind velocity measurement height (m)
+% %      t_air - air temperature (degree centigrade)
+% %       z_ta - air temperature measurement height (m)
+% %         rh - relative humidity (%)
+% %       z_rh - relative humidity measurement height (m)
+% %         Rs - downward shortwave radiation (W/m^2)
+% %         Rl - downward longwave radiation (W/m^2)
+% %       rain - pricipitation rate (mm/hr)
+% %          P - sea level barometric pressure (hPa)
+% %        sst - sea surface temperature (degree centigrade)
+% %        sss - sea surface salinity (PSU)
+% %        ssd - sea surface potential density (sigma-theta) (kg/m^3)
+% %      sprof - salinity profile (PSU)
+% %      tprof - temperature profile (degree centigrade)
+% %    depth_t - depth for T profile (m)
+% %    depth_s - depth for S profile (m)
+% %    cur_spd - total current speed (cm/s)
+% %      cur_u - x component current velocity (cm/s)
+% %      cur_v - y component current velocity (cm/s)
+% %    cur_dir - current direction (clockwise to the North), (degree)
+% %  depth_cur - depth for current profile (m)
+% %        lat - mooring latitude (degree)
+% %        lon - mooring longitude (degree)
+% %       time - datenumbers for measurements (UTC)
+% %       date - date strings for measurements (UTC)
+% %  time_prof - datenumbers for profile measurements (UTC)
+% %  date_prof - date strings for profile measurements (UTC)
+% %  time_rain - datenumbers for precipitation measurements (UTC)
+% %  date_rain - date strings for precipitation measurements (UTC)
+% %     dn2007 - datenumber for start time of time series
+%  dn2007_prof - datenumber for start time of profile time series
+%  dn2007_rain - datenumber for start time of precipitation time series
+
+
 
 % Original profile time series has 94 columns, to exclude the bad data in
 % salinity profile, the last 5 columns are abandoned, therefore only the 
@@ -46,7 +51,7 @@
 
 %% pick out good data
 
-% After preliminary analysis, noticed wind speed datasi ruined after
+% After preliminary analysis, noticed wind speed data is ruined after
 % someday in 2016.
 
 % Wanted to include rain data in the computation of flux, but the
@@ -59,20 +64,20 @@ ruin_day = find(w_spd<100,1,'last');
 w_spd_r = interp1(time(w_spd<100),w_spd(w_spd<100),time(1:ruin_day));
 w_u_r = interp1(time(w_u<100),w_u(w_u<100),time(1:ruin_day));
 w_v_r = interp1(time(w_v<100),w_v(w_v<100),time(1:ruin_day));
-t_r = interp1(time(t_air<50),t_air(t_air<50),time(1:ruin_day));
+t_air_r = interp1(time(t_air<50),t_air(t_air<50),time(1:ruin_day));
 rh_r = interp1(time(rh<150),rh(rh<150),time(1:ruin_day));
-ts_r = interp1(time(ts<100),ts(ts<100),time(1:ruin_day));
+sst_r = interp1(time(sst<100),sst(sst<100),time(1:ruin_day));
 Rs_r = interp1(time(Rs<1000),Rs(Rs<1000),time(1:ruin_day));
 Rl_r = interp1(time(Rl<1000),Rl(Rl<1000),time(1:ruin_day));
 P_r = interp1(time(P<10000),P(P<10000),time(1:ruin_day));
-wd_r = interp1(time(w_dir<=360),w_dir(w_dir<=360),time(1:ruin_day));
+w_dir_r = interp1(time(w_dir<=360),w_dir(w_dir<=360),time(1:ruin_day));
 time_r = time(1:ruin_day);  % truncated datenumbers for measurements (UTC)
 date_r = date(1:ruin_day,:);% truncated strings for measurements (UTC)
 
 
-[T, Z] = meshgrid(prof_t,depth_s);
+[T, Z] = meshgrid(time_prof,depth_s);
 sprof_r = griddata(T(sprof<100),Z(sprof<100),sprof(sprof<100),T,Z,'linear');
-[T, Z] = meshgrid(prof_t,depth_t);
+[T, Z] = meshgrid(time_prof,depth_t);
 tprof_r = griddata(T(tprof<100),Z(tprof<100),tprof(tprof<100),T,Z,'linear');
 
 
@@ -83,14 +88,14 @@ tprof_r = griddata(T(tprof<100),Z(tprof<100),tprof(tprof<100),T,Z,'linear');
 % heatflux = latent heat flux + sensible heat flux - net shortwave radiation
 % (positive) - net longwave radiation (mostly negative)
 
-A = coare35vn(w_spd_r,zu,t_r,zt,rh_r,zq,P_r,ts_r,Rs_r,Rl_r,lat,NaN,NaN,NaN,NaN);
+A = coare35vn(w_spd_r,z_wind,t_air_r,z_ta,rh_r,z_rh,P_r,sst_r,Rs_r,Rl_r,lat,NaN,NaN,NaN,NaN);
 
 tau = A(:,2);
 hsb = A(:,3); % sensible heat flux
 hlb = A(:,4); % latent heat flux
 
 w_cos = w_u_r./w_spd_r;
-w_sin = v_r./w_spd_r;
+w_sin = w_v_r./w_spd_r;
 
 % surface momentum flux in x, y direction
 tau_x = tau.*w_cos;
@@ -117,7 +122,7 @@ nsw = swhf(yd,date_vec(:,1),(360-lon)*ones(size(time_r)),lat*ones(size(time_r)),
 % be perfomed after here.
 
 % compute net long wave heat flux
-nlw = lwhf(ts_r,Rl_r,Rs_r);
+nlw = lwhf(sst_r,Rl_r,Rs_r);
 
 % compute total surfac heat flux (shortwave heat flux and advective heat flux are omitted)
 hf = -hlb - hsb + nlw;
@@ -134,11 +139,11 @@ time_r = datenum(Papa_time);
 date_r = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS');
 date_vec = datevec(date_r); 
 
-% do it again for prof_t
-UTC_time = datetime(prof_t,'ConvertFrom','datenum','TimeZone','UTC');
+% do it again for time_prof
+UTC_time = datetime(time_prof,'ConvertFrom','datenum','TimeZone','UTC');
 Papa_time = datetime(UTC_time,'TimeZone','-10:00');
-prof_t = datenum(Papa_time);
-prof_date = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS');
+time_prof = datenum(Papa_time);
+date_prof = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS');
 
 % Hereafter all the truncated time related variables are in local time zone.
 
@@ -192,7 +197,7 @@ copyfile('./forcing_files/heatflux.dat', './forcing_files/heatflux.dat.kb');
 %% sea surface temparature (sst) file
 
 fileID = fopen('./forcing_files/sst.dat','w');
-H = [cellstr(date_r) num2cell(ts_r)];
+H = [cellstr(date_r) num2cell(sst_r)];
 formatSpec = '%s %6.3f\n';
 
 for i = 1:size(H,1)
@@ -220,11 +225,10 @@ copyfile('./forcing_files/swr.dat', './forcing_files/swr_file.dat');
 %% salinity profile
 
 fileID = fopen('./forcing_files/s_prof.dat','w');
-prof_date = string(prof_date);
 
-for i = 1:size(prof_t,1)
+for i = 1:size(time_prof,1)
     
-    fprintf(fileID,'%s  14 2\n',prof_date(i));
+    fprintf(fileID,'%s  14 2\n',date_prof(i));
     fprintf(fileID,'% d. % 10.7f\n',[depth_s'; sprof_r(:,i)']);
 end
 
@@ -236,9 +240,9 @@ copyfile('./forcing_files/s_prof.dat', './forcing_files/s_prof_file.dat');
 
 fileID = fopen('./forcing_files/t_prof.dat','w');
 
-for i = 1:size(prof_t,1)
+for i = 1:size(time_prof,1)
     
-    fprintf(fileID,'%s  18 2\n',prof_date(i));
+    fprintf(fileID,'%s  18 2\n',date_prof(i));
     fprintf(fileID,'% 9.4f   % 8.4f\n',[depth_t'; tprof_r(:,i)']);
 end
 
@@ -250,9 +254,9 @@ copyfile('./forcing_files/t_prof.dat', './forcing_files/t_prof_file.dat');
 
 fileID = fopen('./forcing_files/cur_prof.dat','w');
 
-for i = 1:size(prof_t,1)
+for i = 1:size(time_prof,1)
     
-    fprintf(fileID,'%s  18 2\n',prof_date(i));
+    fprintf(fileID,'%s  18 2\n',date_prof(i));
     fprintf(fileID,'% 9.4f   % 8.4f\n',[depth_t'; tprof_r(:,i)']);
 end
 
@@ -309,7 +313,7 @@ line(time_r,zeros(size(time_r)),'LineWidth',.6,'Color',[.3 .4 .3])
   
 % sst
 figure('position', [0, 0, 1000, 200])
-line(time_r,ts_r,'LineWidth',.4,'Color',[.8 .4 .2])
+line(time_r,sst_r,'LineWidth',.4,'Color',[.8 .4 .2])
 %line(time_r,zeros(size(time_r)),'LineWidth',.6,'Color',[.3 .4 .3])
   box on
   datetick('x','yyyy')
@@ -343,7 +347,7 @@ cnum = 15;
 CL = [min(min(sprof_r)) max(max(sprof_r))];
 conts = linspace(CL(1),CL(2),cnum);
 cmocean('-haline')
-[T, Z] = meshgrid(prof_t,depth_s);
+[T, Z] = meshgrid(time_prof,depth_s);
 contourf(T,Z,sprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   caxis(CL);
   box on
@@ -370,7 +374,7 @@ cnum = 15;
 CL = [min(min(tprof_r)) max(max(tprof_r))];
 conts = linspace(CL(1),CL(2),cnum);
 cmocean('matter')
-[T, Z] = meshgrid(prof_t,depth_t);
+[T, Z] = meshgrid(time_prof,depth_t);
 contourf(T,Z,tprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   caxis(CL);
   box on
@@ -386,6 +390,6 @@ contourf(T,Z,tprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   h.Label.FontSize = 14;
   set(h,'TickLabelInterpreter','latex','fontsize',9);
   
-  export_fig ('./figs/prof_t','-pdf','-transparent','-painters')
+  export_fig ('./figs/prof_temp','-pdf','-transparent','-painters')
   
   
