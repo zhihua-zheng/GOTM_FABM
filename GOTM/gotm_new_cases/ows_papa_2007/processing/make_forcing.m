@@ -224,7 +224,7 @@ copyfile('./forcing_files/swr.dat', './forcing_files/swr_file.dat');
 
 %% salinity profile
 
-fileID = fopen('./forcing_files/s_prof.dat','w');
+fileID = fopen('./forcing_files/sprof.dat','w');
 
 for i = 1:size(time_prof,1)
     
@@ -238,7 +238,7 @@ copyfile('./forcing_files/s_prof.dat', './forcing_files/s_prof_file.dat');
 
 %% temperature profile
 
-fileID = fopen('./forcing_files/t_prof.dat','w');
+fileID = fopen('./forcing_files/tprof.dat','w');
 
 for i = 1:size(time_prof,1)
     
