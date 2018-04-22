@@ -1,39 +1,48 @@
 % make forcing files for new GOTM ows_papa_2010 test case
 %
-% by Zhihua Zheng (UW/APL), updated on Apr. 3 2018
+% by Zhihua Zheng (UW/APL), updated on Apr. 21 2018
 % 
 % load meteological observation data from PMEL OWS P station mooring
 % ---------------------------------------------------
-%         u - x component wind velocity (m/s)
-%         v - y component wind velocity (m/s)
-%       spd - total wind speed (m/s)
-%     w_dir - wind direction, in oceanographic sense (degree)
-%        uz - wind velocity measurement height (m)
+%       w_u - x component wind velocity (m/s)
+%       w_v - y component wind velocity (m/s)
+%     w_spd - total wind speed (m/s)
+%     w_dir - wind direction (clockwise to the North), in oceanographic sense (degree)
+%    z_wind - wind velocity measurement height (m)
 %     t_air - air temperature (degree centigrade)
-%        zt - air temperature measurement height (m)
+%      z_ta - air temperature measurement height (m)
 %        rh - relative humidity (%)
-%        zq - relative humidity measurement height (m)
-%        ts - sea surface temperature (degree centigrade)
-%     sprof - salinity profile (psu)
-%     tprof - temperature profile (degree centigrade)
-%   depth_t - depth for T profile (m)
-%   depth_s - depth for S profile (m)
+%      z_rh - relative humidity measurement height (m)
 %        Rs - downward shortwave radiation (W/m^2)
 %        Rl - downward longwave radiation (W/m^2)
 %      rain - pricipitation rate (mm/hr)
 %         P - sea level barometric pressure (hPa)
+%       sst - sea surface temperature (degree centigrade)
+%       sss - sea surface salinity (PSU)
+%       ssd - sea surface potential density (sigma-theta) (kg/m^3)
+%     sprof - salinity profile (PSU)
+%     tprof - temperature profile (degree centigrade)
+%   depth_t - depth for T profile (m)
+%   depth_s - depth for S profile (m)
+%   cur_spd - total current speed (cm/s)
+%     cur_u - x component current velocity (cm/s)
+%     cur_v - y component current velocity (cm/s)
+%   cur_dir - current direction (clockwise to the North), in oceanographic sense (degree)
+% depth_cur - depth for current profile (m)
 %       lat - mooring latitude (degree)
 %       lon - mooring longitude (degree)
 %      time - datenumbers for measurements (UTC)
 %      date - date strings for measurements (UTC)
-%    prof_t - datenumbers for profile measurements (UTC)
-% prof_date - date strings for profile measurements (UTC)
+% time_prof - datenumbers for profile measurements (UTC)
+% date_prof - date strings for profile measurements (UTC)
+% time_rain - datenumbers for precipitation measurements (UTC)
+% date_rain - date strings for precipitation measurements (UTC)
 
 % Original profile time series has 94 columns, to exclude the bad data in
 % salinity profile, the last 5 columns are abandoned, therefore only the 
 % first 89 columns are used here
 
-% The workspace is saved as 'met_forcing_p2010.mat'
+% The workspace is saved as 'met_forcing_p2007.mat'
 
 %% pick out good data
 
@@ -102,7 +111,7 @@ yd = date2doy(time_r)-1; % using function date2doy from File Exchange
 
 % compute net short wave heat flux
 nsw = swhf(yd,date_vec(:,1),(360-lon)*ones(size(time_r)),lat*ones(size(time_r)),Rs_r);
-%---- Note to change the longitude into formate of West positive degree
+%---- Note to change the longitude into format of West positive degree
 %---- Note the operating time in the subroutine of swhf, soradna1 (no-sky
 % solar radiation) is in UTC format, therefore the time zone shifting must 
 % be perfomed after here.
@@ -178,7 +187,7 @@ end
 fclose(fileID);
 
 copyfile('./forcing_files/heatflux.dat', './forcing_files/heatflux_file.dat');
-copyfile('./forcing_files/momentumflux.dat', './forcing_files/heatflux.dat.kb');
+copyfile('./forcing_files/heatflux.dat', './forcing_files/heatflux.dat.kb');
 
 %% sea surface temparature (sst) file
 
@@ -192,7 +201,7 @@ end
 
 fclose(fileID);
 
-copyfile('./forcing_files/heatflux.dat', './forcing_files/sst_file.dat');
+copyfile('./forcing_files/sst.dat', './forcing_files/sst_file.dat');
 
 %% net short wave radiation (swr) file
 
@@ -206,7 +215,7 @@ end
 
 fclose(fileID);
 
-copyfile('./forcing_files/heatflux.dat', './forcing_files/swr_file.dat');
+copyfile('./forcing_files/swr.dat', './forcing_files/swr_file.dat');
 
 %% salinity profile
 
@@ -221,7 +230,7 @@ end
 
 fclose(fileID);
 
-copyfile('./forcing_files/heatflux.dat', './forcing_files/s_prof_file.dat');
+copyfile('./forcing_files/s_prof.dat', './forcing_files/s_prof_file.dat');
 
 %% temperature profile
 
@@ -235,7 +244,24 @@ end
 
 fclose(fileID);
 
-copyfile('./forcing_files/heatflux.dat', './forcing_files/t_prof_file.dat');
+copyfile('./forcing_files/t_prof.dat', './forcing_files/t_prof_file.dat');
+
+%% velocity profile
+
+fileID = fopen('./forcing_files/cur_prof.dat','w');
+
+for i = 1:size(prof_t,1)
+    
+    fprintf(fileID,'%s  18 2\n',prof_date(i));
+    fprintf(fileID,'% 9.4f   % 8.4f\n',[depth_t'; tprof_r(:,i)']);
+end
+
+fclose(fileID);
+
+copyfile('./forcing_files/cur_prof.dat', './forcing_files/cur_prof_file.dat');
+
+
+
 
 %% visualization of flux time series for comparison
 
