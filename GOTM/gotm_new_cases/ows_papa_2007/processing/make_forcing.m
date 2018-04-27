@@ -72,8 +72,16 @@ Rs_r = interp1(time(Rs<1000),Rs(Rs<1000),time(pre_day:end));
 Rl_r = interp1(time(Rl<1000),Rl(Rl<1000),time(pre_day:end));
 P_r = interp1(time(P<10000),P(P<10000),time(pre_day:end));
 w_dir_r = interp1(time(w_dir<=360),w_dir(w_dir<=360),time(pre_day:end));
-time_r = time(pre_day:end);  % truncated datenumbers for measurements (UTC)
-date_r = date(pre_day:end);% truncated strings for measurements (UTC)
+time_r = time(pre_day:end); % truncated datenumbers for measurements (UTC)
+date_r = date(pre_day:end); % truncated strings for measurements (UTC)
+
+
+% large gap in barometric pressure even after truncated (39000~44000, Nov. 2011 - Jun. 2012)
+
+P_test = P(39000:44000);
+P_gap_s = find(P<10000,1,'first') + 39000; % starting time index for big P gap
+P_gap_e = find(P<10000,1,'last') + 39000; % ending time index for big P gap
+
 
 
 [T, Z] = meshgrid(time_prof,depth_s);
