@@ -51,28 +51,29 @@
 
 %% pick out good data
 
-% After preliminary analysis, noticed wind speed data is ruined after
-% someday in 2016.
+% After preliminary analysis, noticed that most data is ruined for a
+% long time between Nov. 2008 and Jun. 2009.
 
 % Wanted to include rain data in the computation of flux, but the
 % precipitation measurement is intermittent, hence rain data is ignored.
 
-ruin_day = find(w_spd<100,1,'last'); 
+w_test = w_u(15001:end); % truncated time series
+pre_day = find(w_test<100,1,'first') + 15000; % preferred starting time index
 
 % truncate all the data before ruin_day
 
-w_spd_r = interp1(time(w_spd<100),w_spd(w_spd<100),time(1:ruin_day));
-w_u_r = interp1(time(w_u<100),w_u(w_u<100),time(1:ruin_day));
-w_v_r = interp1(time(w_v<100),w_v(w_v<100),time(1:ruin_day));
-t_air_r = interp1(time(t_air<50),t_air(t_air<50),time(1:ruin_day));
-rh_r = interp1(time(rh<150),rh(rh<150),time(1:ruin_day));
-sst_r = interp1(time(sst<100),sst(sst<100),time(1:ruin_day));
-Rs_r = interp1(time(Rs<1000),Rs(Rs<1000),time(1:ruin_day));
-Rl_r = interp1(time(Rl<1000),Rl(Rl<1000),time(1:ruin_day));
-P_r = interp1(time(P<10000),P(P<10000),time(1:ruin_day));
-w_dir_r = interp1(time(w_dir<=360),w_dir(w_dir<=360),time(1:ruin_day));
-time_r = time(1:ruin_day);  % truncated datenumbers for measurements (UTC)
-date_r = date(1:ruin_day,:);% truncated strings for measurements (UTC)
+w_spd_r = interp1(time(w_spd<100),w_spd(w_spd<100),time(pre_day:end));
+w_u_r = interp1(time(w_u<100),w_u(w_u<100),time(pre_day:end));
+w_v_r = interp1(time(w_v<100),w_v(w_v<100),time(pre_day:end));
+t_air_r = interp1(time(t_air<50),t_air(t_air<50),time(pre_day:end));
+rh_r = interp1(time(rh<150),rh(rh<150),time(pre_day:end));
+sst_r = interp1(time(sst<100),sst(sst<100),time(pre_day:end));
+Rs_r = interp1(time(Rs<1000),Rs(Rs<1000),time(pre_day:end));
+Rl_r = interp1(time(Rl<1000),Rl(Rl<1000),time(pre_day:end));
+P_r = interp1(time(P<10000),P(P<10000),time(pre_day:end));
+w_dir_r = interp1(time(w_dir<=360),w_dir(w_dir<=360),time(pre_day:end));
+time_r = time(pre_day:end);  % truncated datenumbers for measurements (UTC)
+date_r = date(pre_day:end);% truncated strings for measurements (UTC)
 
 
 [T, Z] = meshgrid(time_prof,depth_s);
