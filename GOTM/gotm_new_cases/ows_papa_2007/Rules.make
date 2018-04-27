@@ -6,7 +6,7 @@
 ver=5.0
 
 ifndef GOTMDIR
-export GOTMDIR = $(HOME)/GOTM/code
+export GOTMDIR = ${FGDIR}/GOTM/code
 endif
 
 SCHEMADIR = $(GOTMDIR)/schemas
