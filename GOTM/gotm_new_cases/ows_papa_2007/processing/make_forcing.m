@@ -51,37 +51,47 @@
 
 %% pick out good data
 
+input_test; % initial examination of data quality
+
 % After preliminary analysis, noticed that most data is ruined for a
-% long time between Nov. 2008 and Jun. 2009.
+% long time between Nov. 2008 and Jun. 2009. We decide to truncate the data
+% and pick out the data after Jun. 2009
 
 % Wanted to include rain data in the computation of flux, but the
 % precipitation measurement is intermittent, hence rain data is ignored.
 
-w_test = w_u(15001:end); % truncated time series
-pre_day = find(w_test<100,1,'first') + 15000; % preferred starting time index
+dn2010 = find(date=='2010/01/01 00:00:00');
+dn2011 = find(date=='2011/01/01 00:00:00');
+w_test = w_u(dn2010+1:dn2011);
+% pick out data from '2010/01/01 01:00:00' to '2011/01/01 00:00:00'
 
-% truncate all the data before ruin_day
+pre_day = find(w_test>10000,1,'last') + dn2010; % preferred starting time index
 
-w_spd_r = interp1(time(w_spd<100),w_spd(w_spd<100),time(pre_day:end));
+% Abandon all the data before pre_day, and linearly interpolate the small
+% gaps
+
+% Note that barometric pressure and sea surface temperature have relative
+% long period of missing data, hence the large gaps in P and sst time series 
+% are filled by interpolating the reanalysis data from MERRA2 in space and 
+% time to the ows_papa mooring location and data time.
+
+merra_fill; % subroutine to the large gap
+
+sst_r = interp1(time(sst_r<100),sst_r(sst_r<100),time(pre_day:end));
+P_r = interp1(time(P_r<10000),P_r(P_r<10000),time(pre_day:end));
+
+% w_spd_r = interp1(time(w_spd<100),w_spd(w_spd<100),time(pre_day:end));
+% extra large gap at the end, compared to w_u and w_v data...
+
 w_u_r = interp1(time(w_u<100),w_u(w_u<100),time(pre_day:end));
 w_v_r = interp1(time(w_v<100),w_v(w_v<100),time(pre_day:end));
 t_air_r = interp1(time(t_air<50),t_air(t_air<50),time(pre_day:end));
 rh_r = interp1(time(rh<150),rh(rh<150),time(pre_day:end));
-sst_r = interp1(time(sst<100),sst(sst<100),time(pre_day:end));
 Rs_r = interp1(time(Rs<1000),Rs(Rs<1000),time(pre_day:end));
 Rl_r = interp1(time(Rl<1000),Rl(Rl<1000),time(pre_day:end));
-P_r = interp1(time(P<10000),P(P<10000),time(pre_day:end));
 w_dir_r = interp1(time(w_dir<=360),w_dir(w_dir<=360),time(pre_day:end));
 time_r = time(pre_day:end); % truncated datenumbers for measurements (UTC)
 date_r = date(pre_day:end); % truncated strings for measurements (UTC)
-
-
-% large gap in barometric pressure even after truncated (39000~44000, Nov. 2011 - Jun. 2012)
-
-P_test = P(39000:44000);
-P_gap_s = find(P<10000,1,'first') + 39000; % starting time index for big P gap
-P_gap_e = find(P<10000,1,'last') + 39000; % ending time index for big P gap
-
 
 
 [T, Z] = meshgrid(time_prof,depth_s);
@@ -94,8 +104,8 @@ tprof_r = griddata(T(tprof<100),Z(tprof<100),tprof(tprof<100),T,Z,'linear');
 
 % momentum flux = surface wind stress
 %
-% heatflux = latent heat flux + sensible heat flux - net shortwave radiation
-% (positive) - net longwave radiation (mostly negative)
+% heatflux = - latent heat flux (positive out) - sensible heat flux 
+% (positive out) + net longwave radiation (negative out)
 
 A = coare35vn(w_spd_r,z_wind,t_air_r,z_ta,rh_r,z_rh,P_r,sst_r,Rs_r,Rl_r,lat,NaN,NaN,NaN,NaN);
 
@@ -390,7 +400,7 @@ contourf(T,Z,tprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   datetick('x','yyyy')
   ylabel('depth ($$m$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,'XLim',[datenum('June 16, 2010') datenum('October 16, 2017')],...
+  setDateAxes(gca,'XLim',[datenum('June 14, 2009') datenum('April 21, 2018')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   h = colorbar('EastOutside');
   h.Label.String = 'temperature ($$^{\circ}C$$)';
