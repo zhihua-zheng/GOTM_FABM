@@ -60,12 +60,12 @@ input_test; % initial examination of data quality
 % Wanted to include rain data in the computation of flux, but the
 % precipitation measurement is intermittent, hence rain data is ignored.
 
-dn2010 = find(date=='2010/01/01 00:00:00');
-dn2011 = find(date=='2011/01/01 00:00:00');
-w_test = w_u(dn2010+1:dn2011);
+inx2010 = find(date=='2010/01/01 00:00:00');
+inx2011 = find(date=='2011/01/01 00:00:00');
+w_test = w_u(inx2010+1:inx2011);
 % pick out data from '2010/01/01 01:00:00' to '2011/01/01 00:00:00'
 
-pre_day = find(w_test>10000,1,'last') + dn2010; % preferred starting time index
+pre_day = find(w_test>10000,1,'last') + inx2010; % preferred starting time index
 
 % Abandon all the data before pre_day, and linearly interpolate the small
 % gaps

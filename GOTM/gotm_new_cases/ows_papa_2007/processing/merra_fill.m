@@ -18,8 +18,8 @@
 %% slp_2010
 
 % large gap in barometric pressure after pre_day (Mar. 2010 - Nov.2010)
-P_test = P(dn2010+1:dn2011);
-P_2010 = find(P_test>10000) + dn2010;
+P_test = P(inx2010+1:inx2011);
+P_2010 = find(P_test>10000) + inx2010;
 
 
 ncvars =  {'lat', 'lon', 'SLP', 'time'};
@@ -55,8 +55,6 @@ end
 [X_merra, Y_merra, Z_merra] = meshgrid(lon_merra,lat_merra,time_slp);
 
 % interpolate to get the sea level pressure time series at buoy site
-lon = double(lon);
-lat = double(lat);
 slp_papa_2010 = interp3(X_merra,Y_merra,Z_merra,slp,...
     (lon-360)*ones(size(P_2010)),lat*ones(size(P_2010)),time(P_2010))/100;
 % the unit for sea level pressure in merra is Pa
@@ -66,11 +64,11 @@ P_r(P_2010) = slp_papa_2010;
 
 %% slp_2013
 
-dn2013 = find(date=='2013/01/01 00:00:00');
-dn2015 = find(date=='2015/01/01 00:00:00');
+inx2013 = find(date=='2013/01/01 00:00:00');
+inx2015 = find(date=='2015/01/01 00:00:00');
 
-P_test = P(dn2013+1:dn2015);
-P_2013 = find(P_test>10000) + dn2013;
+P_test = P(inx2013+1:inx2015);
+P_2013 = find(P_test>10000) + inx2013;
 
 
 ncvars =  {'lat', 'lon', 'SLP', 'time'};
@@ -114,11 +112,11 @@ P_r(P_2013) = slp_papa_2013;
 
 %% sst_2017
 
-dn2017 = find(date=='2017/01/01 00:00:00');
-dn2018 = find(date=='2018/01/01 00:00:00');
+inx2017 = find(date=='2017/01/01 00:00:00');
+inx2018 = find(date=='2018/01/01 00:00:00');
 
-sst_test = sst(dn2017+1:dn2018);
-sst_2017 = find(sst_test>10000) + dn2017;
+sst_test = sst(inx2017+1:inx2018);
+sst_2017 = find(sst_test>10000) + inx2017;
 
 
 ncvars =  {'lat', 'lon', 'TS', 'time'};

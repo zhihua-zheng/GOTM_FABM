@@ -70,6 +70,11 @@ Rl = double(squeeze(squeeze(Rl)));
 rain = double(squeeze(squeeze(rain)));
 rh = double(squeeze(squeeze(rh)));
 P = double(squeeze(squeeze(P)));
+lon = double(lon);
+lat = double(lat);
+z_rh = double(z_rh);
+z_wind = double(z_wind);
+z_ta = double(z_ta);
 
 sprof = double(squeeze(squeeze(sprof)));
 tprof = double(squeeze(squeeze(tprof)));
