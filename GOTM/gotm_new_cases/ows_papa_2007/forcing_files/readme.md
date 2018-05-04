@@ -8,8 +8,8 @@ The way how bulk formulae for the surface momentum and heat fluxes have been use
 is discussed in detail in Burchard et al. (1999).
 
 The maximum simulation time allowed by the included surface forcing file and the 
-temperature profile fileis June 14 (14.00 h), 2010 - June 16 (01.00 h), 2016. In this 
-scenario, the simulation time is run from June 15, 2010 (0.00 h) to June 15, 2011 (0.00 h).
+temperature profile fileis Nov 10 (07.00 h), 2010 - Apr 20 (14.00 h), 2018 (local time). In this 
+scenario, the simulation time is run from Mar 25, 2011 (0.00 h) to Mar 15, 2012 (0.00 h).
 
 For further information, see Burchard and Bolding (2001).
 
@@ -29,8 +29,8 @@ These forcing files include hourly surface momentum flux, hourly heat flux, hour
 shortwave radiation, hourly sea surface temperature, monthly salinity profile, monthly (in 
 situ) temperature profile.
 
-Hourly data is from 2010/06/14 14:00:00 to 2016/06/16 01:00:00, monthly data is from 
-2010/06/16 02:00:00 to 2017/10/16 02:00:00. Missing data is interpolated using linear method
+Hourly data is from 2010/11/10 07:00:00 to 2018/04/20 14:00:00 (local time), monthly data is from 
+2009/06/15 16:00:00 to 2018/04/15 16:00:00 (local time). Missing data is interpolated using linear method
 (interp1 and griddata in MATLAB). The time labels used here are in local time zone.
 
 Momentum flux, latent heat flux, and sensible heat flux are computed using coare35vn.m 
@@ -43,4 +43,4 @@ treating positive flux as into the ocean.
 Note the surface heat flux forcing presented here does not include advective heat flux and 
 net short wave radiation.
 
----- Zhihua Zheng (UW/APL), updated on Apr. 20 2018
+---- Zhihua Zheng (UW/APL), updated on May 04 2018
