@@ -105,19 +105,20 @@ time_prof_r = time_prof(25:end);
 
 % Absolute salinity and potential temperature conversion (TEOS-10)
 
-[T_s, Z_s] = meshgrid(time_prof_r,depth_s);
+[T, Z_s] = meshgrid(time_prof_r,depth_s);
 saprof = gsw_SA_from_SP(sprof_tr,Z_s,lon,lat); % henceforth absolute salinity
-sprof_r = griddata(T_s(~isnan(saprof)),Z_s(~isnan(saprof)),saprof(~isnan(saprof)),T_s,Z_s,'linear');
+sprof_r = griddata(T(~isnan(saprof)),Z_s(~isnan(saprof)),saprof(~isnan(saprof)),T,Z_s,'linear');
 
 % absolute salinity is required for calculating potential temperature, so
 % make the max depth of t_profile same as s_profile
 depth_t = depth_t(1:end-1);
-tprof_tr = tprof_tr(1:end-1,:);
 
-[T_t, Z_t] = meshgrid(time_prof_r,depth_t);
-sprof_depth_t = griddata(T_s(~isnan(saprof)),Z_s(~isnan(saprof)),saprof(~isnan(saprof)),T_t,Z_t,'linear');
-ptprof = gsw_pt0_from_t(sprof_depth_t,tprof_tr,Z_t); % henceforth potential temperature
-tprof_r = griddata(T_t(~isnan(ptprof)),Z_t(~isnan(ptprof)),ptprof(~isnan(ptprof)),T_t,Z_t,'linear');
+[T, Z_t] = meshgrid(time_prof_r,depth_t);
+sprof_depth_t = griddata(T(~isnan(saprof)),Z_s(~isnan(saprof)),saprof(~isnan(saprof)),T,Z_t,'linear');
+
+ptprof = gsw_pt0_from_t(sprof_depth_t,tprof_tr,Z_t);
+
+tprof_r = griddata(T(tprof_tr<100),Z(tprof_tr<100),tprof_tr(tprof_tr<100),T,Z,'linear');
 
 
 %----- current data is extremely bad
@@ -414,7 +415,7 @@ contourf(T,Z,sprof_r,conts,'LineWidth',0.01,'LineStyle','none')
   
   
 % temperature profiles
-figure('position', [0, 0, 900, 200])
+figure('position', [0, 0, 900, 300])
 
 cnum = 15;
 CL = [min(min(tprof_r)) max(max(tprof_r))];

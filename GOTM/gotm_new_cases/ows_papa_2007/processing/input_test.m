@@ -4,6 +4,33 @@
 % Test the the input data quality 
 
 
+%% wind gustiness
+
+bad_w_gust = find(w_gust>100);
+w_gust_nan = ones(size(w_gust))*NaN;
+
+v_max = max(w_gust(w_gust<100));
+v_min = min(w_gust(w_gust<100));
+y_up = v_max + 0.1*(v_max-v_min);
+y_bot = v_min - 0.1*(v_max-v_min);
+w_gust_nan(bad_w_gust) = v_max + 0.05*(v_max-v_min);
+
+figure('position', [0, 0, 1000, 200])
+
+scatter(time(w_gust<100),w_gust(w_gust<100),.9,'MarkerEdgeColor',rand(1,3),...
+              'MarkerFaceColor',rand(1,3),'LineWidth',1)
+line(time,w_gust_nan,'LineWidth',6,'Color',[.9 .1 .2])
+box on
+datetick('x','yyyy')
+ylabel('zonal wind speed ($$m/s$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
+xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
+setDateAxes(gca,'XLim',[datenum('June 08, 2007') datenum('April 21, 2018')],...
+'YLim',[y_bot y_up],...
+'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
+
+%export_fig ('./test/w_gust_sereis','-pdf','-transparent','-painters')
+
+
 %% zonal wind speed
 
 bad_w_u = find(w_u>100);
