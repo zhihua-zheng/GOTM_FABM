@@ -18,3 +18,5 @@ make
 make install
 
 export GOTMDIR=${FGDIR}/GOTM/code
+
+rm -r build/

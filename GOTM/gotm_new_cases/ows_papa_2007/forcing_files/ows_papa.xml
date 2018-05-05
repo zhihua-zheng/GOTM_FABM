@@ -40,10 +40,10 @@
 				800
 			</MaxN>
 			<start>
-				2012-06-15 00:00:00
+				2011-03-25 00:00:00
 			</start>
 			<stop>
-				2013-06-15 00:00:00
+				2012-03-25 00:00:00
 			</stop>
 		</time>
 		<output>
@@ -54,11 +54,11 @@
 				.
 			</out_dir>
 			<out_fn>
-				ows_papa_my
+				ows_papa
 			</out_fn>
                         <nfirst>0</nfirst>
 			<nsave>
-				24
+				1
 			</nsave>
 			<sync_out>
 				0
@@ -240,10 +240,10 @@
 				99
 			</turb_method>
 			<tke_method>
-				2
+				3
 			</tke_method>
 			<len_scale_method>
-				8
+				9
 			</len_scale_method>
 			<stab_method>
 				3

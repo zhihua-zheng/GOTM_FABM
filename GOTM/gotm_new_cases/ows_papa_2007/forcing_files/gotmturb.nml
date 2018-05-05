@@ -40,8 +40,8 @@
 
 &turbulence
    turb_method = 99,
-   tke_method = 2,
-   len_scale_method = 8,
+   tke_method = 3,
+   len_scale_method = 9,
    stab_method = 3,
 /
 

@@ -5,8 +5,12 @@
 # GOTM target version
 ver=5.0
 
+ifndef FGDIR
+export FGDIR=/Users/Danny/Documents/GitHub/GOTM_FABM
+endif
+
 ifndef GOTMDIR
-export GOTMDIR = ${FGDIR}/GOTM/code
+export GOTMDIR=${FGDIR}/GOTM/code
 endif
 
 SCHEMADIR = $(GOTMDIR)/schemas
@@ -17,7 +21,7 @@ tarflags =  -C ../ --files-from filelist -cvzf
 all: namelist run
 
 namelist:
-	editscenario --schemadir=$(SCHEMADIR) --targetversion=gotm-$(ver) $(setup).xml -e nml .
+	editscenario --schemadir=$(SCHEMADIR) --skipvalidation --targetversion=gotm-$(ver) $(setup).xml -e nml .
 
 namelist-gui:
 	editscenario --schemadir=$(SCHEMADIR) --targetversion=gotm-$(ver) $(setup).xml -e nml . -g

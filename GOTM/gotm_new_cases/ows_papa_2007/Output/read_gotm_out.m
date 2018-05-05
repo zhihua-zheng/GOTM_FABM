@@ -25,11 +25,11 @@ out.time = ncread(fname,'time'); % seconds since the initialized time in the sim
 out.lon = ncread(fname,'lon'); % longitude [degrees_east]
 out.lat = ncread(fname,'lat');% latitude [degrees_north]
 out.ga = squeeze(squeeze(ncread(fname,'ga'))); % coordinate scaling
-out.z = squeeze(squeeze(ncread(fname,'z'))); % depth [m]
+out.z = squeeze(squeeze(ncread(fname,'z'))); % depth coordinate[m]
 out.zi = squeeze(squeeze(ncread(fname,'zi'))); % interface depth [m]
 
 out.temp = squeeze(squeeze(ncread(fname,'temp'))); % potential temperature [Celsius]
-out.salt = squeeze(squeeze(ncread(fname,'salt'))); % practical salinity [PSU]
+out.salt = squeeze(squeeze(ncread(fname,'salt'))); % absolute salinity [g/kg]
 out.rho = squeeze(squeeze(ncread(fname,'rho'))); % potential density [kg/m^3]
 out.temp_obs = squeeze(squeeze(ncread(fname,'temp_obs'))); % observed potential temperature [Celsius]
 out.salt_obs = squeeze(squeeze(ncread(fname,'salt_obs'))); % observed practical salinity [PSU]
@@ -67,8 +67,8 @@ out.sst_obs = squeeze(ncread(fname,'sst_obs')); % observed sea surface temperatu
 out.sss = squeeze(ncread(fname,'sst')); % sea surface salinity [PSU]
 out.zeta = squeeze(ncread(fname,'zeta')); % sea surface elevation [m]
 
-out.u = squeeze(squeeze(ncread(fname,'u'))); % x-velocity [m/s]
-out.v = squeeze(squeeze(ncread(fname,'v'))); % y-velocity [m/s]
+out.u = squeeze(squeeze(ncread(fname,'u'))); % x-mean flow [m/s]
+out.v = squeeze(squeeze(ncread(fname,'v'))); % y-mean flow [m/s]
 out.u_obs = squeeze(squeeze(ncread(fname,'u_obs'))); % observed x-velocity [m/s]
 out.v_obs = squeeze(squeeze(ncread(fname,'v_obs'))); % observed y-velocity [m/s]
 out.taub = squeeze(ncread(fname,'taub')); % bottom stress [Pa]
@@ -136,9 +136,9 @@ out.bioshade = squeeze(squeeze(ncread(fname,'bioshade'))); % fraction of visible
 % reduce dummy dimension
 
 % get date strings
-dn2010 = datenum(2010,6,15); % datenumber for initialized time of simulation
+dn2010 = datenum(2011,03,25); % datenumber for initialized time of simulation
 out.time = dn2010+out.time/3600/24;
-out.date = datestr(out.time, 'yyyy/mm/dd HH:MM:SS');
+out.date = string(datestr(out.time, 'yyyy/mm/dd HH:MM:SS'));
 
 
 end

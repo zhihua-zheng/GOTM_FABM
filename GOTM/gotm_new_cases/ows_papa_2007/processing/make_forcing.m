@@ -188,7 +188,7 @@ date_vec = datevec(date_r);
 UTC_time = datetime(time_prof_r,'ConvertFrom','datenum','TimeZone','UTC');
 Papa_time = datetime(UTC_time,'TimeZone','-10:00');
 time_prof_r = datenum(Papa_time);
-date_prof_r = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS');
+date_prof_r = string(datestr(Papa_time,'yyyy/mm/dd HH:MM:SS'));
 
 % Hereafter all the truncated time related variables are in local time zone.
 
@@ -273,7 +273,7 @@ fileID = fopen('../forcing_files/sprof.dat','w');
 
 for i = 1:size(time_prof_r,1)
     
-    fprintf(fileID,'%s  14 2\n',date_prof_r(i));
+    fprintf(fileID,'%s  19 2\n',date_prof_r(i));
     fprintf(fileID,'% d. % 10.7f\n',[depth_s'; sprof_r(:,i)']);
 end
 
@@ -287,7 +287,7 @@ fileID = fopen('../forcing_files/tprof.dat','w');
 
 for i = 1:size(time_prof_r,1)
     
-    fprintf(fileID,'%s  18 2\n',date_prof_r(i));
+    fprintf(fileID,'%s  22 2\n',date_prof_r(i));
     fprintf(fileID,'% 9.4f   % 8.4f\n',[depth_t'; tprof_r(:,i)']);
 end
 
