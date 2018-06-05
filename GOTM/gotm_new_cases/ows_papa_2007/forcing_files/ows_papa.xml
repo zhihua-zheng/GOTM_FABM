@@ -40,10 +40,10 @@
 				800
 			</MaxN>
 			<start>
-				2011-03-25 00:00:00
+				1961-03-25 00:00:00
 			</start>
 			<stop>
-				2012-03-25 00:00:00
+				1962-03-25 00:00:00
 			</stop>
 		</time>
 		<output>
@@ -58,7 +58,7 @@
 			</out_fn>
                         <nfirst>0</nfirst>
 			<nsave>
-				3
+				24
 			</nsave>
 			<sync_out>
 				0
@@ -237,13 +237,13 @@
 	<gotmturb>
 		<turbulence>
 			<turb_method>
-				99
+				3
 			</turb_method>
 			<tke_method>
-				3
+				2
 			</tke_method>
 			<len_scale_method>
-				9
+				8
 			</len_scale_method>
 			<stab_method>
 				3
@@ -755,7 +755,44 @@
 			</o2_units>
 			<o2_prof_file/>
 		</o2_profile>
+		<bioprofiles>
+			<bio_prof_method>
+				0
+			</bio_prof_method>
+			<bio_prof_file/>
+		</bioprofiles>
 	</obs>
+	<bio>
+		<bio_nml>
+			<bio_calc>
+				False
+			</bio_calc>
+			<bio_model>
+				1
+			</bio_model>
+			<bio_eulerian>
+				True
+			</bio_eulerian>
+			<cnpar>
+				1.0
+			</cnpar>
+			<w_adv_discr>
+				6
+			</w_adv_discr>
+			<ode_method>
+				8
+			</ode_method>
+			<split_factor>
+				1
+			</split_factor>
+			<bioshade_feedback>
+				True
+			</bioshade_feedback>
+			<npar>
+				-1
+			</npar>
+		</bio_nml>
+	</bio>
 	<seagrass>
 		<canopy>
 			<seagrass_calc>

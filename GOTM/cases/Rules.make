@@ -5,8 +5,12 @@
 # GOTM target version
 ver=5.3
 
+ifndef FGDIR
+export FGDIR=/Users/Danny/Documents/GitHub/GOTM_FABM
+endif
+
 ifndef GOTMDIR
-export GOTMDIR = $(HOME)/source/repos/GOTM/code
+export GOTMDIR=${FGDIR}/GOTM/code
 endif
 
 SCHEMADIR = $(GOTMDIR)/schemas

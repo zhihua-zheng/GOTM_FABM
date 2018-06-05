@@ -1,5 +1,5 @@
 ows_papa:
    time_unit: dt
-   time_step: 24
+   time_step: 1
    variables:
       - source: *
