@@ -24,7 +24,7 @@
 &model_setup
    title = 'GOTM Simulation',
    nlev = 250,
-   dt = 3600.0,
+   dt = 60.0,
    cnpar = 1.0,
    buoy_method = 1,
 /
@@ -124,7 +124,7 @@
    out_dir = '.',
    out_fn = 'ows_papa',
    nfirst = 0,
-   nsave = 1,
+   nsave = 180,
    sync_out = 0,
    diagnostics = .false.,
    mld_method = 1,
@@ -181,4 +181,3 @@
    dtr0 = -0.17,
    dsr0 = 0.78,
 /
-
