@@ -21,7 +21,7 @@ tarflags =  -C ../ --files-from filelist -cvzf
 all: namelist run
 
 namelist:
-	editscenario --schemadir=$(SCHEMADIR) --skipvalidation --targetversion=gotm-$(ver) $(setup).xml -e nml .
+	editscenario --schemadir=$(SCHEMADIR) --targetversion=gotm-$(ver) $(setup).xml -e nml .
 
 namelist-gui:
 	editscenario --schemadir=$(SCHEMADIR) --targetversion=gotm-$(ver) $(setup).xml -e nml . -g
