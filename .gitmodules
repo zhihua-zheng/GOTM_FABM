@@ -1,3 +1,6 @@
 [submodule "GOTM/code"]
 	path = GOTM/code
 	url = https://github.com/gotm-model/code.git
+[submodule "GOTM/cases"]
+	path = GOTM/cases
+	url = https://github.com/gotm-model/cases.git
