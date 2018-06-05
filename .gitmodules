@@ -4,3 +4,6 @@
 [submodule "GOTM/code"]
 	path = GOTM/code
 	url = https://github.com/gotm-model/code.git
+[submodule "FABM/code"]
+	path = FABM/code
+	url = https://github.com/fabm-model/fabm.git
