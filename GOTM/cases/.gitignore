@@ -1,0 +1,6 @@
+*.nc
+*.swp
+*.log
+timestamp
+acpy/
+
