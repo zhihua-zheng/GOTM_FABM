@@ -27,7 +27,7 @@ models for the oceanic mixed layer, J. Phys. Oceanogr., 31, 1943-1968, 2001.
 These forcing files include hourly surface momentum flux, hourly heat flux, hourly net
 shortwave radiation, hourly sea surface temperature, monthly salinity profile, monthly (in situ) temperature profile.
 
-Hourly data is from 2010/11/10 07:00:00 to 2018/04/20 14:00:00 (local time), monthly data is from 2009/06/15 16:00:00 to 2018/04/15 16:00:00 (local time). Missing data is interpolated using linear method (interp1 and griddata in MATLAB). The time labels used here are in local time zone.
+Hourly data is from 2010/11/10 07:00:00 to 2018/04/20 14:00:00 (local time), monthly data is from 2009/06/16 2:00:00 to 2018/04/16 2:00:00 (local time). Missing data is interpolated using linear method (interp1 and griddata in MATLAB). The time labels used here are in local time zone.
 
 Momentum flux, latent heat flux, and sensible heat flux are computed using coare35vn.m
 algorithm (from NOAA, after Fairall et al, 2003) without including rainfall data. Net

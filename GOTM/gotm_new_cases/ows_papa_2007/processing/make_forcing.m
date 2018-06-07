@@ -78,7 +78,7 @@ pre_day = find(w_test>10000,1,'last') + inx2010; % preferred starting time index
 % are filled by interpolating the reanalysis data from MERRA2 in space and 
 % time to the ows_papa mooring location and data time.
 
-merra_fill; % subroutine to the large gap
+merra_fill; % subroutine to fill the large gap
 
 sst_r = interp1(time(sst_r<100),sst_r(sst_r<100),time(pre_day:end));
 P_r = interp1(time(P_r<10000),P_r(P_r<10000),time(pre_day:end));
@@ -98,7 +98,7 @@ time_r = time(pre_day:end); % truncated datenumbers for measurements (UTC)
 date_r = date(pre_day:end); % truncated strings for measurements (UTC)
 
 
-% TS profile data has large gap before 2009/06/16 12:00:00
+% TS profile data has large gap before 2009/06/16 12:00:00 (UTC)
 sprof_tr = sprof(:,25:end);
 tprof_tr = tprof(:,25:end);
 time_prof_r = time_prof(25:end);
@@ -120,7 +120,7 @@ ptprof = gsw_pt0_from_t(sprof_depth_t,tprof_tr,Z_t); % henceforth potential temp
 tprof_r = griddata(T_t(~isnan(ptprof)),Z_t(~isnan(ptprof)),ptprof(~isnan(ptprof)),T_t,Z_t,'linear');
 
 
-%----- current data is extremely bad
+%----- velocity data is extremely bad
 % [T, Z] = meshgrid(time_prof_r,depth_cur);
 % cur_u_r = griddata(T(cur_u<100),Z(cur_u<100),cur_u(cur_u<100),T,Z,'linear');
 
