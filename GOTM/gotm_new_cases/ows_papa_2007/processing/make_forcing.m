@@ -211,7 +211,7 @@ plot(one_day)
 
 %% momentum flux
 
-fileID = fopen('../forcing_files/momentumflux.dat','w');
+fileID = fopen('../setup_files/momentumflux.dat','w');
 H = [cellstr(date_r) num2cell(tau_x) num2cell(tau_y)];
 formatSpec = '%s  % 8.6e % 8.6e\n';
 
@@ -221,12 +221,12 @@ end
 
 fclose(fileID);
 
-copyfile('../forcing_files/momentumflux.dat', '../forcing_files/momentumflux_file.dat');
+copyfile('../setup_files/momentumflux.dat', '../setup_files/momentumflux_file.dat');
 % one dot (.) - present folder, two dots (..) - parent of current folder
 
 %% heat flux
 
-fileID = fopen('../forcing_files/heatflux.dat','w');
+fileID = fopen('../setup_files/heatflux.dat','w');
 H = [cellstr(date_r) num2cell(hf)];
 formatSpec = '%s   % 8.6e\n';
 
@@ -236,12 +236,12 @@ end
 
 fclose(fileID);
 
-copyfile('../forcing_files/heatflux.dat', '../forcing_files/heatflux_file.dat');
-copyfile('../forcing_files/heatflux.dat', '../forcing_files/heatflux.dat.kb');
+copyfile('../setup_files/heatflux.dat', '../setup_files/heatflux_file.dat');
+copyfile('../setup_files/heatflux.dat', '../setup_files/heatflux.dat.kb');
 
 %% sea surface temparature (sst) file
 
-fileID = fopen('../forcing_files/sst.dat','w');
+fileID = fopen('../setup_files/sst.dat','w');
 H = [cellstr(date_r) num2cell(sst_r)];
 formatSpec = '%s %6.3f\n';
 
@@ -251,11 +251,11 @@ end
 
 fclose(fileID);
 
-copyfile('../forcing_files/sst.dat', '../forcing_files/sst_file.dat');
+copyfile('../setup_files/sst.dat', '../setup_files/sst_file.dat');
 
 %% net short wave radiation (swr) file
 
-fileID = fopen('../forcing_files/swr.dat','w');
+fileID = fopen('../setup_files/swr.dat','w');
 H = [cellstr(date_r) num2cell(nsw)];
 formatSpec = '%s  % 8.6e\n';
 
@@ -265,11 +265,11 @@ end
 
 fclose(fileID);
 
-copyfile('../forcing_files/swr.dat', '../forcing_files/swr_file.dat');
+copyfile('../setup_files/swr.dat', '../setup_files/swr_file.dat');
 
 %% salinity profile
 
-fileID = fopen('../forcing_files/sprof.dat','w');
+fileID = fopen('../setup_files/sprof.dat','w');
 
 for i = 1:size(time_prof_r,1)
     
@@ -279,11 +279,11 @@ end
 
 fclose(fileID);
 
-copyfile('../forcing_files/sprof.dat', '../forcing_files/s_prof_file.dat');
+copyfile('../setup_files/sprof.dat', '../setup_files/s_prof_file.dat');
 
 %% temperature profile
 
-fileID = fopen('../forcing_files/tprof.dat','w');
+fileID = fopen('../setup_files/tprof.dat','w');
 
 for i = 1:size(time_prof_r,1)
     
@@ -293,11 +293,11 @@ end
 
 fclose(fileID);
 
-copyfile('../forcing_files/tprof.dat', '../forcing_files/t_prof_file.dat');
+copyfile('../setup_files/tprof.dat', '../setup_files/t_prof_file.dat');
 
 %% velocity profile
 
-% fileID = fopen('../forcing_files/cur_prof.dat','w');
+% fileID = fopen('../setup_files/cur_prof.dat','w');
 % 
 % for i = 1:size(time_prof_r,1)
 %     
@@ -307,7 +307,7 @@ copyfile('../forcing_files/tprof.dat', '../forcing_files/t_prof_file.dat');
 % 
 % fclose(fileID);
 % 
-% copyfile('../forcing_files/cur_prof.dat', '../forcing_files/cur_prof_file.dat');
+% copyfile('../setup_files/cur_prof.dat', '../setup_files/cur_prof_file.dat');
 
 
 
