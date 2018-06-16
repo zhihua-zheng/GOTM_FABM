@@ -64,16 +64,18 @@ keps_2011_dy = read_gotm_out('ows_papa_keps_2011_dy.nc',3600,2); % daily mean
 kpp_2011 = read_gotm_out('ows_papa_kpp_2011.nc',3600,1);
 kpp_2011_dy = read_gotm_out('ows_papa_kpp_2011_dy.nc',3600,1); % daily mean
 
+% common variables for both k-epsilon and kpp
 time = double(keps_2011.time);
 time_dy = double(keps_2011_dy.time);
-date = (keps_2011.date);
-date_vec = datevec(char(date)); 
+date = keps_2011.date;
+dateVec = datevec(char(date)); 
 z = mean(double(keps_2011.z),2);
 zi = mean(double(keps_2011.zi),2);
 int_total = double(keps_2011.int_total);
 int_heat = double(keps_2011.int_heat);
 int_swr = double(keps_2011.int_swr);
 
+% data from k-epsilon simulation
 sst_keps = double(keps_2011.sst);
 sst_obs_keps = double(keps_2011.sst_obs);
 temp_keps = double(keps_2011.temp);
@@ -88,6 +90,7 @@ nu_s = double(keps_2011.nu_s);
 NN_keps = double(keps_2011.NN);
 rho_keps = double(keps_2011.rho);
 
+% data from kpp simulation
 sst_kpp = double(kpp_2011.sst);
 sst_obs_kpp = double(kpp_2011.sst_obs);
 temp_kpp = double(kpp_2011.temp);
@@ -101,59 +104,88 @@ rho_kpp = double(kpp_2011.rho);
 
 %% Heat Content
 
-% integrated heat from observation
-
+%---- Plot integrated heat from observation
 figure('position', [0, 0, 1200, 300])
-line(time,int_total,'LineWidth',3,'Color',[.2 .6 .7])
-line(time,int_heat,'LineWidth',.8,'Color',[.8 .2 .2])
-line(time,int_swr,'LineWidth',.8,'Color',[.3 .2 .5])
+line(time,int_total./10^(6),'LineWidth',3,'Color',[.2 .6 .7])
+line(time,int_heat./10^(6),'LineWidth',.8,'Color',[.8 .2 .2])
+line(time,int_swr./10^(6),'LineWidth',.8,'Color',[.3 .2 .5])
 line(time,zeros(size(time)),'LineWidth',.6,'Color',[.3 .3 .3],'LineStyle','--')
+% mark the net heat taken by the water column from surface measurement
+line([time(end) time(end)],[0 int_total(end)/10^(6)],'Color',[.2 .5 .6],'LineStyle','-','LineWidth',3);
+text(time(end-2200),300,['net heat into the ocean $\sim$ ', num2str(round(int_total(end)/10^(6))), ' $MJ/m^{2}$'],...
+    'fontname','computer modern','Interpreter','latex','fontsize',13)
 
   box on
   datetick('x','mmm')
   lgd = legend('total heat exchange', 'surface heat flux','short wave radiation','Location','best');
   set(lgd,'Interpreter','latex','fontsize', 14)
-  ylabel('integrated heat ($J/m^{2}$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
+  ylabel('integrated heat ($MJ/m^{2}$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   setDateAxes(gca,'XLim',[datenum('March 25, 2011') datenum('March 25, 2012')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   
   export_fig ('./figs/integrated_heat_2011','-pdf','-transparent','-painters')  
-  
+%--------  
   
  
-% calculation of heat content and temporal derivative
+%---- Calculation of heat content and temporal derivative
 
-c_p = ones(size(temp_keps))*3850; % specific heat capacity
-HC_keps = sum(rho_keps.*c_p.*temp_keps);  
+% observation only goes down to 200m, so we will focus on the upper 200m
+% specific heat capacity - gsw_cp0
+
+% from k-epsilon
+HC_keps = sum(rho_keps(51:end,:).*(temp_keps(51:end,:)+273.15)*gsw_cp0);  
 HC_delta_keps = HC_keps(end) - HC_keps(1);
 HC_t_keps = gradient(HC_keps,3600);
 
-HC_kpp = sum(rho_kpp.*c_p.*temp_kpp);  
+% from kpp
+HC_kpp = sum(rho_kpp(51:end,:).*(temp_kpp(51:end,:)+273.15)*gsw_cp0);  
 HC_delta_kpp = HC_kpp(end) - HC_kpp(1);
 HC_t_kpp = gradient(HC_kpp,3600);
 
-HC_t_surface = gradient(int_total,3600);
+% from observation
+rho_2011 = NaN*ones(200,size(tprof_2011,2));
+temp_2011 = NaN*ones(200,size(tprof_2011,2));
 
-% heat content plot
-figure('position', [0, 0, 800, 200])
-line(time,HC_keps,'LineWidth',.8,'Color',[.7 .4 .6])
-line(time,HC_kpp,'LineWidth',.8,'Color',[.4 .3 .5])
-line(time,ones(size(time))*HC_keps(1),'LineWidth',.6,'Color',[.3 .3 .3],'LineStyle','--')
-line(time,ones(size(time))*HC_keps(end),'LineWidth',.6,'Color',[.3 .3 .3],'LineStyle','--')
+for i = 1:size(tprof_2011,2)
+  
+rho_2011(:,i) = interp1(-depth_s,rhoprof_2011(:,i),z(51:end),'linear','extrap');
+temp_2011(:,i) = interp1(-depth_t,tprof_2011(:,i),z(51:end),'linear','extrap');
+
+end
+
+HC_obs = sum(rho_2011.*(temp_2011+273.15)*gsw_cp0);
+
+HC_t_surface = gradient(int_total,3600);
+%---------
+
+%------ Heat content plot
+figure('position', [0, 0, 900, 300])
+line(time,HC_keps./10^(6),'LineWidth',.1,'Color',[.7 .4 .6])
+line(time,HC_kpp./10^(6),'LineWidth',.1,'Color',[.6 .8 .2])
+line(time,(int_total+HC_keps(1))./10^(6),'LineWidth',.1,'Color',[.1 .6 .7])
+line(time,ones(size(time))*HC_keps(1)/10^(6),'LineWidth',.6,'Color',[.3 .3 .3],'LineStyle','--')
+hold on
+scatter(time_prof_2011,HC_obs./10^(6),20,'*r')
+% mark the heat content change of water column from simulation results
+line([time(end) time(end)],[HC_keps(1)/10^(6) HC_keps(end)/10^(6)],'Color','k','LineStyle','-','LineWidth',4);
+%text(time(end-3000),4700,['heat content change $\sim$ ', num2str(round(HC_delta_kpp/10^(6))), ' $MJ/m^{2}$'],...
+%    'fontname','computer modern','Interpreter','latex','fontsize',13)
+
   box on
   datetick('x','mmm')
-  lgd = legend('$k-\varepsilon$', 'KPP','Location','best');
+  lgd = legend('$k-\varepsilon$ HC','KPP HC','surface heat exchange','obs. HC','Location','best');
   set(lgd,'Interpreter','latex','fontsize', 14)
-  ylabel('heat content ($J/m^{2}$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
+  ylabel('heat content ($MJ/m^{2}$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
   xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,'XLim',[datenum('March 25, 2011') datenum('March 25, 2012')],...
+  setDateAxes(gca,'XLim',[datenum('March 16, 2011') datenum('March 25, 2012')],...
       'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
   
   export_fig ('./figs/heat_content_2011','-pdf','-transparent','-painters')  
+%-----------
 
 
-% temporal variation of heat content
+%------- Plot temporal variation of heat content
 figure('position', [0, 0, 1000, 400])
 subplot(2,1,1)
 line(time,HC_t_surface,'LineWidth',1,'Color','k')
@@ -185,7 +217,7 @@ line(time,zeros(size(time)),'LineWidth',.6,'Color',[.3 .3 .3],'LineStyle','--')
 
 %% Eddy Diffusivity
 
-index = find(date_vec(:,1)==2011 & date_vec(:,2)==8 & date_vec(:,3)==5);
+index = find(dateVec(:,1)==2011 & dateVec(:,2)==8 & dateVec(:,3)==5);
 
 De_keps_pick = mean(De_keps(:,index),2);
 nu_h_keps_pick = mean(nu_h(:,index),2);
@@ -267,7 +299,7 @@ for i = 2011:2012
     
     for j = 1:12
         
-        index = find(date_vec(:,1)==i & date_vec(:,2)==j);
+        index = find(dateVec(:,1)==i & dateVec(:,2)==j);
         tprof_keps(:,m) = mean(temp_keps(:,index),2);
         tprof_kpp(:,m) = mean(temp_kpp(:,index),2);
         m = m + 1;

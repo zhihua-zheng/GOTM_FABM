@@ -1,6 +1,6 @@
-% make forcing files for new GOTM ows_papa_2010 test case
+% make forcing files for new GOTM ows_papa_2007 test case
 %
-% by Zhihua Zheng (UW/APL), updated on Apr. 21 2018
+% by Zhihua Zheng (UW/APL), updated on Jun. 15 2018
 % 
 % load meteological observation data from PMEL OWS P station mooring
 % ---------------------------------------------------
@@ -42,12 +42,9 @@
 %  dn2007_rain - datenumber for start time of precipitation time series
 
 
+%% Load the workspace 'met_forcing_p2007.mat'
 
-% Original profile time series has 94 columns, to exclude the bad data in
-% salinity profile, the last 5 columns are abandoned, therefore only the 
-% first 89 columns are used here
-
-% The workspace is saved as 'met_forcing_p2007.mat'
+load('met_forcing_p2007.mat')
 
 %% pick out good data
 
@@ -101,13 +98,17 @@ date_r = date(pre_day:end); % truncated strings for measurements (UTC)
 % TS profile data has large gap before 2009/06/16 12:00:00 (UTC)
 sprof_tr = sprof(:,25:end);
 tprof_tr = tprof(:,25:end);
+rhoprof_tr = rhoprof(:,25:end);
 time_prof_r = time_prof(25:end);
 
 % Absolute salinity and potential temperature conversion (TEOS-10)
-
 [T_s, Z_s] = meshgrid(time_prof_r,depth_s);
 saprof = gsw_SA_from_SP(sprof_tr,Z_s,lon,lat); % henceforth absolute salinity
 sprof_r = griddata(T_s(~isnan(saprof)),Z_s(~isnan(saprof)),saprof(~isnan(saprof)),T_s,Z_s,'linear');
+
+% depth_rho = depth_s, interpolate potential density profiles using the
+% same grid as absolute salinity
+rhoprof_r = griddata(T_s(rhoprof_tr<100),Z_s(rhoprof_tr<100),rhoprof_tr(rhoprof_tr<100),T_s,Z_s,'linear');
 
 % absolute salinity is required for calculating potential temperature, so
 % make the max depth of t_profile same as s_profile
@@ -181,7 +182,7 @@ Papa_time = datetime(UTC_time,'TimeZone','-10:00');
 
 % date number, date string and date vector for papa station local time
 time_r = datenum(Papa_time);
-date_r = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS');
+date_r = datestr(Papa_time,'yyyy/mm/dd HH:MM:SS'); % leave it as 'character'
 date_vec = datevec(date_r); 
 
 % do it again for time_prof_r
@@ -191,6 +192,8 @@ time_prof_r = datenum(Papa_time);
 date_prof_r = string(datestr(Papa_time,'yyyy/mm/dd HH:MM:SS'));
 
 % Hereafter all the truncated time related variables are in local time zone.
+
+% An updated workspace 'met_forcing_p2007_re.mat' is hence saved.
 
 %% Diurnal SWR check
 
