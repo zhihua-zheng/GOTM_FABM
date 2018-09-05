@@ -1,0 +1,10 @@
+# ignore model setup files
+OCS_Papa_2007/setup_files/
+
+
+# ignore data file
+*.nc
+*.cdf
+*.mat
+
+# ignore figs 
