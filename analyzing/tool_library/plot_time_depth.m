@@ -24,12 +24,27 @@ function   plot_time_depth(t, d, scalar, spec_info)
 %  September 2 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 %
 
-figure('position', [0, 0, 980, 250])
+%% determine color value limits -------------------------------------------
+if isempty(spec_info.clim)
+    
+    CL = [min(min(scalar)) max(max(scalar))];  % default option
+elseif spec_info.clim == 'symmetric'
+    
+    tmp1 = min(min(scalar));
+    tmp2 = max(max(scalar));
+    tmp = max(abs(tmp1), abs(tmp2)); % the one with largest magnitude
+    CL = [-tmp tmp];
+else
+    CL = spec_info.clim;
+end
+%% ------------------------------------------------------------------------
+
 cnum = 15;
-CL = [min(min(scalar)) max(max(scalar))];
 conts = linspace(CL(1),CL(2),cnum);
 cmocean(spec_info.color)
 [T, Z] = meshgrid(t,d);
+
+figure('position', [0, 0, 980, 250])
 contourf(T,Z,scalar,conts,'LineWidth',0.01,'LineStyle','none')
 
   caxis(CL);
@@ -48,10 +63,11 @@ contourf(T,Z,scalar,conts,'LineWidth',0.01,'LineStyle','none')
   h.Label.FontName = 'computer modern';
   h.Label.FontSize = 14;
   set(h,'TickLabelInterpreter','latex','fontsize',9);
-  
+
+%% save or not ------------------------------------------------------------
 if spec_info.save_switch
     
-  set(gca(),'LooseInset', get(gca(),'TightInset')); % no blank edge
+  set(gca(),'LooseInset', get(gca(),'TightInset')); 
   saveas(gcf, spec_info.save_path, 'epsc');
 end
 

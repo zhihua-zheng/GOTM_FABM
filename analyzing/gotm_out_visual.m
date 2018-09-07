@@ -1,203 +1,125 @@
+%% gotm_out_visual
 
-%% READ the Variables from Output
+% Main program to analyze output data from GOTM simulations
+
+% Zhihua Zheng, UW-APL, Sep. 5 2018
+
+
+%% General Configuration before Analysis
 
 clear
 
+% gather data info using dialog box
+
+prompt = {'GOTM root directory path:','Output directory path:',...
+    'Closure method used:','Time step (dt) used:',...
+    'Saving period (nsave) used:'};
+title = 'Specify Output Data Information';
+dims = [1 100];
+definput = {'~/Documents/GitLab/GOTM_dev/',...
+    'run/Idealized_Hurricane_Experiment/Idealized_Hurricane_SMCLT_20110401-20110404/STORAGE',...
+    'SMCLT','60','60'};
+data_info = inputdlg(prompt,title,dims,definput);
+
 % path
-GOTM_root = '~/Documents/GitLab/GOTM_dev/';
-run_dir = 'run/OCSPapa_SMCLT_20100616-20171005_1800';
-% run_dir = 'run/OCSPapa_SMCLT_20120701-20131201_1800_Z';
-cd ([GOTM_root,run_dir])
+cd ([data_info{1},data_info{2}])
 
 % simulation info
-nsave = 6;
-dt = 1800;
-turb_method = 'SMCLT';
+turb_method = data_info{3};
+dt = str2double(data_info{4});
+nsave = str2double(data_info{5});
+
+
+% check ./figs folder
+if ~exist('figs/','dir') % if doesn't exist, create one
+    mkdir figs
+end
+
 
 % general plot specification info
-spec_info.timeformat = 'mmm/yyyy';
-spec_info.save_switch = 1;
+spec_info.timeformat = 'hh';
+
+% general analyzing options
+mld_smooth = 0; % choose to smooth mixed layer depth or not
+
+% find the netCDF file
+dinfo = dir(fullfile('./*.nc'));
+fname = fullfile('./',{dinfo.name});
 
 % load
-SMCLT_long = read_gotm_out('gotm_out.nc',2);
+out = read_gotm_out(fname{:},2);
 
-% read variables
-time = SMCLT_long.time;
-date = SMCLT_long.date;
-dateVec = datevec(char(date));
-z = mean(SMCLT_long.z,2);
-zi = mean(SMCLT_long.zi,2);
-h = mean(SMCLT_long.h,2);
-int_total = SMCLT_long.int_total;
-int_heat = SMCLT_long.int_heat;
-int_swr = SMCLT_long.int_swr;
+% read general variables
+time = out.time;
+date = out.date;
+% dateVec = datevec(char(date));
+z = mean(out.z,2);
+zi = mean(out.zi,2);
+h = mean(out.h,2);
+int_total = out.int_total;
+int_heat = out.int_heat;
+int_swr = out.int_swr;
 
 
-sst = SMCLT_long.sst;
-sst_obs = SMCLT_long.sst_obs;
-temp = SMCLT_long.temp;
-temp_obs = SMCLT_long.temp_obs;
+sst = out.sst;
+sst_obs = out.sst_obs;
+temp = out.temp;
+temp_obs = out.temp_obs;
 sst_from_prof = temp(128,:)';
 
-buoy = SMCLT_long.buoy;
-NN = SMCLT_long.NN;
-rho = SMCLT_long.rho;
+buoy = out.buoy;
+NN = out.NN;
+rho = out.rho;
 
 
 %% Heat Content
 
-%---- Plot integrated heat infor from observation -------------------------
-figure('position', [0, 0, 900, 300])
+heat_content;
 
-line(time,int_total./10^(6),'LineWidth',3,'Color',[.2 .6 .7])
-line(time,int_heat./10^(6),'LineWidth',.8,'Color',[.8 .2 .2])
-line(time,int_swr./10^(6),'LineWidth',.8,'Color',[.3 .2 .5])
-line(time,zeros(size(time)),'LineWidth',.6,'Color',[.3 .3 .3],'LineStyle','--')
-
-% mark the net heat taken by the water column from surface measurement
-line([time(end) time(end)],[0 int_total(end)/10^(6)],'Color',...
-    [.2 .2 .2],'LineStyle','-','LineWidth',4);
-text(time(end-7000),-int_total(end)/10^6,...
-    ['net heat into the ocean $\sim$ ', num2str(round(int_total(end)/10^(6))),...
-    ' $MJ/m^{2}$'],'fontname','computer modern','Interpreter','latex','fontsize',15)
-
-% figure specification
-spec_info.lgd_switch = 1;
-spec_info.lgd_label = {'total heat exchange','surface heat flux',...
-    'short wave radiation'};
-spec_info.x_time = 1;
-spec_info.ylabel = 'integrated heat ($MJ/m^{2}$)';
-spec_info.save_path = './figs/int_heat';
-
-line_annotate(time,spec_info)
-%--------------------------------------------------------------------------
-
-
-%---- Calculation of heat content and temporal derivative -----------------
-
-% observation only goes down to 200m, so we will focus on the upper 200m
-% specific heat capacity - gsw_cp0, from GSW toolbox
-
-% depth z index 22 ~ upper 201.4027m
-HC = sum(rho(22:end,:).*(temp(22:end,:)+273.15).*h(22:end,:)*gsw_cp0); %[J/m^2]
-HC_delta = HC(end) - HC(1);
-HC_t = gradient(HC,dt*nsave); %[W/m^2]
-
-
-% from observation
-HC_obs = sum(rho(22:end,:).*(temp_obs(22:end,:)+273.15).*h(22:end,:)*gsw_cp0);
-HC_delta_obs = HC_obs(end) - HC_obs(1);
-HC_t_obs = gradient(HC_obs,dt*nsave);
-
-% from surface heat info
-HC_surface = int_total+HC(1);
-HC_t_surface = gradient(int_total,dt*nsave);
-
-HC_error = 100*(int_total(end) - HC_delta)/int_total(end); % in percent
-%--------------------------------------------------------------------------
-
-
-%------ Heat content time series ------------------------------------------
-figure('position', [0, 0, 900, 300])
-
-line(time,HC./10^(6),'LineWidth',.3,'Color',[.7 .4 .6])
-line(time,HC_surface./10^(6),'LineWidth',.3,'Color',[.1 .6 .7])
-line(time,HC_obs./10^(6),'LineWidth',.05,'Color',[.4 .8 .6])
-line(time,ones(size(time))*HC(1)/10^(6),'LineWidth',.9,'Color',[.3 .3 .3],'LineStyle','--')
-
-% mark the deviation from surface heat input
-line([time(end) time(end)],[HC(1)/10^(6) HC_surface(end)./10^(6)],...
-    'Color',[.6 .1 .3],'LineStyle','-','LineWidth',3);
-text(time(end-2200),HC(end)/10^(6),...
-    ['$\sim$ ',num2str(round(HC_error,2)),'$\%$'],'color',[.6 .1 .3],...
-    'fontname','computer modern','Interpreter','latex','fontsize',13)
-
-% mark the heat content change relative to observation
-line([time(end) time(end)],[HC(1)/10^(6) HC(end)/10^(6)],'Color',...
-    [.1 .1 .1],'LineStyle','-','LineWidth',3);
-text(time(end-7000),HC(8800)/10^(6),[turb_method,...
-    ' heat content change $\sim$ ',num2str(round((HC_delta-HC_delta_obs)/10^(6))),...
-    ' $MJ/m^{2}$'],'Color',[.1 .1 .1],'fontname','computer modern',...
-    'Interpreter','latex','fontsize',13)
-  
-% figure specification
-spec_info.lgd_label = {[turb_method,' HC'],'surface heat exchange','obs. HC'};
-spec_info.ylabel = 'heat content ($MJ/m^{2}$)';
-spec_info.save_switch = 1;
-spec_info.save_path = './figs/HC';
-
-line_annotate(time,spec_info)  
-%--------------------------------------------------------------------------
-
-
-%------- Plot temporal variation of heat content --------------------------
-figure('position', [0, 0, 900, 300])
-
-line(time,HC_t_surface,'LineWidth',1,'Color','k')
-line(time,HC_t,'LineWidth',1,'Color',[.4 .9 .7])
-line(time,zeros(size(time)),'LineWidth',.6,'Color',[.5 .5 .5],'LineStyle',':')
- 
-% figure specification
-spec_info.lgd_label = {'surface heat exchange rate',...
-    ['$\partial_{t}HC$ in ',turb_method]};
-spec_info.ylabel = 'temporal heat variation ($W/m^{2}$)';
-spec_info.save_path = './figs/HC_t_surf';
-
-line_annotate(time,spec_info)
-
-%--------
-figure('position', [0, 0, 900, 300])
-
-line(time,HC_t_obs,'LineWidth',1,'Color','k')
-line(time,HC_t,'LineWidth',1,'Color',[.4 .9 .7])
-line(time,zeros(size(time)),'LineWidth',.6,'Color',[.5 .5 .5],'LineStyle',':')
-
-spec_info.lgd_label = {'$\partial_{t}HC$ in obs.', ...
-    ['$\partial_{t}HC$ in ',turb_method]};
-spec_info.ylabel = 'temporal heat variation ($W/m^{2}$)';
-spec_info.save_path = './figs/HC_t_obs';
-
-line_annotate(time,spec_info)
-
-%% Mixed Layer Depth
+%% Mixed Layer Depth (diagnosed from TKE threshold, mld_method = 1)
 
 % mixed layer depth data is really bad
-mld = SMCLT_long.mld_surf;
+mld = out.mld_surf;
 
-% filter, 5 day smoothing (~ 8 inertial periods)
-win_size = 5*24*3600/(nsave*dt);
-b = (1/win_size)*ones(1,win_size);
-a = 1;
+% inertial frequency
+f_Coriolis = gsw_f(out.lat); % [radian/s]
+% inertial period
+t_Coriolis = 2*pi/f_Coriolis/3600; % [hour]
 
-mld_filter = filter(b,a,mld);
+if mld_smooth == 1
+    % filter length (~ 3 inertial periods)
+    filter_length = 3*t_Coriolis;
+    win_size = ceil(filter_length*3600/(nsave*dt));
+    b = (1/win_size)*ones(1,win_size);
+    a = 1;
+    mld = filter(b,a,mld);
+end
+
 
 figure('position', [0, 0, 900, 300])
-line(time,mld_filter,'LineWidth',.4,'Color',[.2 .6 .9])
-axis ij
+line(time,-mld,'LineWidth',.4,'Color',[.2 .6 .9])
 
-spec_info.lgd_switch = 0;
+spec_info.x_time = 1;
+spec_info.lgd = 0;
 spec_info.ylabel = 'mixed layer depth (m)';
+spec_info.save = 1;
 spec_info.save_path = './figs/mld';
 
 line_annotate(time,spec_info)
 
 %% Inertial Currents
 
-u = SMCLT_long.u;
-v = SMCLT_long.v;
-
-% inertial frequency
-f_Coriolis = gsw_f(SMCLT_long.lat); % [radian/s]
-% inertial period
-t_Coriolis = 2*pi/f_Coriolis/3600; % [hour]
+u = out.u;
+v = out.v;
 
 % find where the mixed layer depth is in variable z
-ml_mask = SMCLT_long.z >= -repmat(mld_filter',length(z),1);  
+ml_mask = out.z >= -repmat(mld',length(z),1);  
 
 % u(u>1 | u<-1) = 0;
 % v(v>1 | v<-1) = 0;
 u_surf = u(end,:);
 v_surf = v(end,:);
+cur_surf = complex(u_surf,v_surf);
 cur = complex(u,v);
 
 % average current in mixed layer
@@ -214,13 +136,10 @@ end
 
 cur_a(ml_mask(end,:) == 0) = 0; % avoid NaN when mld is 0
 
+% temporal evolution of current vector vertex
 
-figure('position', [0, 0, 500, 400])
-% plot(cur_a,'Color',[.5 .6 .7],'LineStyle','--','LineWidth',.8)
-cmocean('phase')
-scatter(real(cur_a),imag(cur_a),5,time,'filled')
-colorbar('EastOutside')
-
+hodogram(time, cur_a)
+  
 %------- FFT power spectral density estimate ------------------------------
 
 % f = (1/(nsave*dt))*(0:(n/2))/n; % frequency domain
@@ -231,33 +150,15 @@ colorbar('EastOutside')
 
 
 %------- Welch?s power spectral density estimate --------------------------
+
 cur_a = cur_a - mean(cur_a);
-% FFT transform length - next power of two greater than the signal length
-n = 2^nextpow2(length(time));
+ 
+% the next power of 2 greater than signal length - FFT transfrom length
+n = 2^nextpow2(length(cur_a));
+
 [p_cur, f] = pwelch(cur_a,[],[],n,24*3600/(nsave*dt)); % f in cycle/day
-figure('position', [0, 0, 600, 300])
 
-% counter-clockwise, negative
-loglog(f(1:n/2),p_cur(1:n/2),'Color',[.1 .6 .7],'LineStyle','-','LineWidth',.3) 
-hold on
-
-% clockwise, positive
-loglog(f(1:n/2),flip(p_cur(n/2+1:end)),'Color',[.9 .4 .6],'LineStyle','-','LineWidth',.3) 
-hold on
-
-% mark inertial frequency
-loglog([24/t_Coriolis 24/t_Coriolis],[.001*min(p_cur) 100*max(p_cur)],...
-    'Color',[.4 .5 .5],'LineStyle','-.','LineWidth',.3);
-hold off
-
-spec_info.x_time = 0;
-spec_info.xlabel = 'frequency (cycle per day)';
-spec_info.ylabel = 'PSD ($$(m/s)^2/cpd$$)';
-spec_info.lgd_switch = 1;
-spec_info.lgd_label = {'counter clockwise', 'clockwise'};
-spec_info.save_path = './figs/cur_spec';
-
-line_annotate(f(1:n/2),spec_info)
+rotary_spec(f,p_cur,24/t_Coriolis,1)
 %--------------------------------------------------------------------------
 
 
@@ -269,28 +170,24 @@ line_annotate(f(1:n/2),spec_info)
 
 %--------------------------------------------------------------------------
 
-% spec_info.save_switch = 0;
+% spec_info.save = 0;
 % plot_time_depth(time,z,abs(cur),spec_info)
 
 %% Turbulence Statistics
 
-tke = SMCLT_long.tke;
-eps = SMCLT_long.eps;
+tke = out.tke;
+eps = out.eps;
 
-uu = SMCLT_long.uu;
-vv = SMCLT_long.vv;
-ww = SMCLT_long.ww; 
-
-u_star = SMCLT_long.u_taus; % waterside friction velocity
+u_star = out.u_taus; % waterside friction velocity
 
 %% Eddy Diffusivity
 
 % index = find(dateVec(:,1)==2011 & dateVec(:,2)==8 & dateVec(:,3)==5);
 
-D_e = SMCLT_long.D_e;
-nu_m = SMCLT_long.nu_m;
-nu_h = SMCLT_long.nu_h;
-nu_s = SMCLT_long.nu_s;
+D_e = out.D_e;
+nu_m = out.nu_m;
+nu_h = out.nu_h;
+nu_s = out.nu_s;
 
 figure('position', [0, 0, 400, 600])
 semilogx(De_keps_pick,z,'LineWidth',.4,'Color',[.8 .7 .2])
@@ -330,9 +227,10 @@ line(time,sst_from_prof,'LineWidth',.8,'Color',[.8 .7 .2])
 line(time,sst_obs,'LineWidth',.8,'Color',[.3 .6 .4])
 
 spec_info.x_time = 1;
-spec_info.lgd_switch = 1;
+spec_info.lgd = 1;
 spec_info.lgd_label = {'SMCLT','observation'};
 spec_info.ylabel = 'sea surface temperature ($$^{\circ}C$$)';
+spec_info.save = 1;
 spec_info.save_path = './figs/sst';
 
 line_annotate(time,spec_info)
@@ -408,28 +306,41 @@ line(time_obs,diff_kpp_shallow,'LineWidth',1,'Color',[.4 .2 .8])
 
 %% Evolution of Temperature Profile (prediction and observation)
 
+% model prediction
 spec_info.ylabel = 'depth ($$m$$)';
+spec_info.clim = [];
 spec_info.clabel = 'potential temperature ($$^{\circ}C$$)';
 spec_info.color = 'matter';
 spec_info.ylim = [-300, 0];
+spec_info.save = 1;
 spec_info.save_path = './figs/temp';
+
 plot_time_depth(time,z,temp,spec_info)
 
+% observation
+spec_info.clim = [min(min(temp)) max(max(temp))];
 spec_info.clabel = 'obs. potential temperature ($$^{\circ}C$$)';
+spec_info.color = 'matter';
+spec_info.save = 1;
 spec_info.save_path = './figs/temp_obs';
+
 plot_time_depth(time,z,temp_obs,spec_info)
 
+% prediction - observation
+spec_info.clim = 'symmetric';
+spec_info.clabel = 'temperature diffence ($$^{\circ}C$$)';
+spec_info.color = 'curl';
+spec_info.save = 0;
+spec_info.save_path = './figs/temp_diff';
 
-% hold on
-% [T, Z] = meshgrid(time,zi);
-% contour(T,Z,L,[100 100],'LineWidth',5)
-
+plot_time_depth(time,z,temp-temp_obs,spec_info)
 
 %% length scale
 
-L = SMCLT_long.L;
+L = out.L;
 
 spec_info.color = 'deep';
+spec_info.save = 0;
 spec_info.save_path = './figs/length';
 spec_info.clabel = 'length scale ($$m$$)';
 spec_info.ylabel = 'depth (m)';

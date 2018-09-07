@@ -1,4 +1,4 @@
-function   line_annotate(x,spec_info)
+function   line_annotate(x, spec_info)
 
 % line_annotate
 %==========================================================================
@@ -22,7 +22,11 @@ function   line_annotate(x,spec_info)
 
 
 box on
-grid on
+
+if spec_info.grid_on
+    
+    grid on
+end
 
 if spec_info.x_time
 
@@ -34,7 +38,7 @@ else
     'computer modern', 'fontsize', 14,'Interpreter', 'latex')
 end
 
-if spec_info.lgd_switch
+if spec_info.lgd
     
     lgd = legend(spec_info.lgd_label,'Location','best');
     set(lgd,'Interpreter','latex','fontsize', 14)
@@ -46,10 +50,9 @@ setDateAxes(gca,'fontsize',11,...
   'fontname','computer modern','TickLabelInterpreter','latex')
 
 % save figure or not
-if spec_info.save_switch
+if spec_info.save
     
-    set(gca(),'LooseInset', get(gca(),'TightInset')); % no blank edge
-    saveas(gcf, spec_info.save_path, 'epsc');
+    export_fig(spec_info.save_path,'-eps','-transparent','-painters')
 end
 
 end

@@ -3,5 +3,6 @@
 Files of different numerical experiments conducted in GOTM framework.
 
 * Ocean Climate Station Papa
-* Southern Ocean Flux Station
+* Idealised Hurricane
+* Southern Ocean Flux Station (in future)
 * More to be included...
