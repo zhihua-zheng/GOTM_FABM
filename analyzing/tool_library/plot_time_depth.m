@@ -41,10 +41,10 @@ end
 
 cnum = 15;
 conts = linspace(CL(1),CL(2),cnum);
-cmocean(spec_info.color)
 [T, Z] = meshgrid(t,d);
 
 figure('position', [0, 0, 980, 250])
+cmocean(spec_info.color)
 contourf(T,Z,scalar,conts,'LineWidth',0.01,'LineStyle','none')
 
   caxis(CL);
@@ -65,10 +65,13 @@ contourf(T,Z,scalar,conts,'LineWidth',0.01,'LineStyle','none')
   set(h,'TickLabelInterpreter','latex','fontsize',9);
 
 %% save or not ------------------------------------------------------------
-if spec_info.save_switch
+if spec_info.save
     
-  set(gca(),'LooseInset', get(gca(),'TightInset')); 
+  set(gca,'LooseInset', get(gca,'TightInset')); % no blank edge
   saveas(gcf, spec_info.save_path, 'epsc');
+  
+  % clean the white lines in the patch
+  epsclean([spec_info.save_path,'.eps'],'closeGaps',true) 
 end
 
 end

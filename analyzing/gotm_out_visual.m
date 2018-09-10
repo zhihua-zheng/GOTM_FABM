@@ -99,6 +99,7 @@ end
 figure('position', [0, 0, 900, 300])
 line(time,-mld,'LineWidth',.4,'Color',[.2 .6 .9])
 
+spec_info.grid_on = 1;
 spec_info.x_time = 1;
 spec_info.lgd = 0;
 spec_info.ylabel = 'mixed layer depth (m)';
@@ -149,7 +150,7 @@ hodogram(time, cur_a)
 %--------------------------------------------------------------------------
 
 
-%------- Welch?s power spectral density estimate --------------------------
+%------- Welch's power spectral density estimate --------------------------
 
 cur_a = cur_a - mean(cur_a);
  
@@ -223,9 +224,10 @@ semilogx(nu_s_keps_pick,zi,'LineWidth',.4,'Color',[.4 .3 .5])
 %% SST
 
 figure('position', [0, 0, 900, 300])
-line(time,sst_from_prof,'LineWidth',.8,'Color',[.8 .7 .2])
+line(time,sst_from_prof,'LineWidth',.8,'Color',[.6 .4 .2])
 line(time,sst_obs,'LineWidth',.8,'Color',[.3 .6 .4])
 
+spec_info.grid_on = 0;
 spec_info.x_time = 1;
 spec_info.lgd = 1;
 spec_info.lgd_label = {'SMCLT','observation'};
@@ -310,8 +312,8 @@ line(time_obs,diff_kpp_shallow,'LineWidth',1,'Color',[.4 .2 .8])
 spec_info.ylabel = 'depth ($$m$$)';
 spec_info.clim = [];
 spec_info.clabel = 'potential temperature ($$^{\circ}C$$)';
-spec_info.color = 'matter';
-spec_info.ylim = [-300, 0];
+spec_info.color = 'haline';
+spec_info.ylim = [zi(1), 0];
 spec_info.save = 1;
 spec_info.save_path = './figs/temp';
 
@@ -339,18 +341,23 @@ plot_time_depth(time,z,temp-temp_obs,spec_info)
 
 L = out.L;
 
-spec_info.color = 'deep';
+spec_info.clim = [];
+spec_info.color = 'tempo';
 spec_info.save = 0;
 spec_info.save_path = './figs/length';
 spec_info.clabel = 'length scale ($$m$$)';
 spec_info.ylabel = 'depth (m)';
-spec_info.ylim = [-150 0];
+spec_info.ylim = [zi(1) 0];
 
 plot_time_depth(time,zi,L,spec_info)
 
 hold on 
-line(time,-mld_filter,'LineWidth',.08,'Color',[.3 .2 .1],'LineStyle',':')
+line(time,-mld,'LineWidth',.1,'Color',[.3 .2 .1],'LineStyle','--')
 
 set(gca(),'LooseInset', get(gca(),'TightInset')); % no blank edge
 saveas(gcf, spec_info.save_path, 'epsc');
-% [x,y] = find(L>100);
+
+% clean the white lines in the patch
+epsclean([spec_info.save_path,'.eps'],'closeGaps',true) 
+
+

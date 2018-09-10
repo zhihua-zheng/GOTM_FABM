@@ -8,3 +8,6 @@ OCS_Papa_2007/setup_files/
 *.mat
 
 # ignore figs 
+OCS_Papa_2007/output_figs/
+OCS_Papa_2007/pre_figs/
+OCS_Papa_2007/test_figs/

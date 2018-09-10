@@ -42,12 +42,13 @@ hold off
 
 
 % call 'line_annotate.m' to add figure details
+spec_info.grid_on = 1;
 spec_info.x_time = 0;
 spec_info.xlabel = 'frequency (cycle per day)';
 spec_info.ylabel = 'PSD ($$(m/s)^2/cpd$$)';
-spec_info.lgd_switch = 1;
+spec_info.lgd = 1;
 spec_info.lgd_label = {'counter clockwise', 'clockwise'};
-spec_info.save_switch = save_switch;
+spec_info.save = save_switch;
 spec_info.save_path = './figs/cur_spec';
 
 line_annotate(f(1:n/2),spec_info)
