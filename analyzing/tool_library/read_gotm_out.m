@@ -23,7 +23,7 @@ function  out = read_gotm_out(fname,order)
 %
 
 
-%% general info
+%% general_info
 out.time = double(ncread(fname,'time'));
 % seconds since the initialized time in the simulation
 
@@ -106,7 +106,8 @@ out.tke = double(squeeze(squeeze(ncread(fname,'tke')))); % turbulent kinetic ene
 out.Rig = double(squeeze(squeeze(ncread(fname,'Rig')))); % gradient Richardson number
 
 out.D_e = double(squeeze(squeeze(ncread(fname,'avh')))); % eddy diffusivity [m^2/s]
-out.nu_m = double(squeeze(squeeze(ncread(fname,'num')))); % turbulent diffusivity of momentum / turbulent viscosity [m^2/s]
+out.nu_m = double(squeeze(squeeze(ncread(fname,'num')))); % turbulent diffusivity of momentum - down the Eulerian shear [m^2/s]
+out.nu_cl = double(squeeze(squeeze(ncread(fname,'nucl')))); % Craik-Leibovich turbulent diffusivity of momentum - down the Stokes shear [m^2/s]
 out.nu_h = double(squeeze(squeeze(ncread(fname,'nuh')))); % turbulent diffusivity of heat [m^2/s]
 out.nu_s = double(squeeze(squeeze(ncread(fname,'nus')))); % turbulent diffusivity of salt [m^2/s]
 
@@ -181,8 +182,6 @@ out.bioshade = double(squeeze(squeeze(ncread(fname,'bioshade'))));
 % fraction of visible light that is not shaded by overlying biogeochemistry
 
 out.swr = double(squeeze(squeeze(ncread(fname,'rad')))); % short-wave radiation [W/m^2]
-
-% reduce dummy dimension
 
 %% -- Get date strings
 
