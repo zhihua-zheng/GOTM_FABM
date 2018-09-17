@@ -1,4 +1,4 @@
-function [u_w, v_w, theta_w] = get_turb_flux(model_par, out)
+function w_w = get_v_tke(model_par, u_w, v_w, theta_w, out)
 
 % get_turb_flux
 %==========================================================================
@@ -14,31 +14,30 @@ function [u_w, v_w, theta_w] = get_turb_flux(model_par, out)
 % INPUT:
 %
 %  model_par - A struct containing parameters used in the model
+%  u_w - turbulent x-momentum flux [m^2/s^2]
+%  v_w - turbulent y-momentum flux [m^2/s^2]
+%  theta_w - turbulent heat flux [K*m/s]
 %  out - A struct containing all the model output from GOTM
 %
 % OUTPUT:
 %
-%  u_w - turbulent x-momentum flux [m^2/s^2]
-%  v_w - turbulent y-momentum flux [m^2/s^2]
-%  theta_w - turbulent heat flux [K*m/s]
+%  w_w - vertical turbulent kinetic energy (vTKE), vertical velocity
+%       fluctuation variance [m^2/s^2]
 %
 % AUTHOR:
 %  September 16 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 %
 
-%% TO-DO
-
-% 1. check if the velocity and temprature output are averaged quantities
-
-%% Note
-
-% 1. cmue1 = sqrt(2)*Sm ... 
-% 2. num = cmue1*sqrt(tke)*L = Sm*sqrt(2*tke)*L = Sm*q*L ...
-
 %% Read relevant variables
+q2 = 2*out.tke; 
+q = sqrt(q2); % turbulent velocity scale [m/s]
 
 dt = model_par.dt;
 nsave = model_par.nsave;
+A1 = model_par.A1;
+B1 = model_par.B1;
+alpha = model_par.dtr0;
+g = 9.81;
 
 %% Deal with staggered grid
 
@@ -49,26 +48,17 @@ Ti = repmat(out.time',size(Zi,1),1);
 Z = out.z;
 T = repmat(out.time',size(Z,1),1);
 
-u = interp2(T,Z,out.u,Ti,Zi,'linear');
-v = interp2(T,Z,out.v,Ti,Zi,'linear');
 u_stokes = interp2(T,Z,out.u_stokes,Ti,Zi,'linear');
 v_stokes = interp2(T,Z,out.v_stokes,Ti,Zi,'linear');
-temp = interp2(T,Z,out.temp,Ti,Zi,'linear');
-
-%% Eulerian shear
-[~, u_z] = gradient(u,dt*nsave,out.z);
-[~, v_z] = gradient(v,dt*nsave,out.z);
 
 %% Stokes shear
 [~, uStokes_z] = gradient(u_stokes,dt*nsave,out.z);
 [~, vStokes_z] = gradient(v_stokes,dt*nsave,out.z);
 
-%% Temperature gradient
-[~, temp_z] = gradient(temp,dt*nsave,out.z);
-
 %% Computation
-u_w = -(out.nu_m.*u_z + out.nu_cl.*uStokes_z);
-v_w = -(out.nu_m.*v_z + out.nu_cl.*vStokes_z);
-theta_w = -(out.nu_h.*temp_z);
+
+w_w = q2*(1-6*A1/B1)/3 + (6*A1*out.L./q).*(alpha*g*theta_w - ...
+    u_w.*uStokes_z - v_w.*vStokes_z);
+
 
 end
