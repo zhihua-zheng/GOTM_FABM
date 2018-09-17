@@ -36,11 +36,16 @@ if ~exist('figs/','dir') % if doesn't exist, create one
 end
 
 
-% general plot specification info
-spec_info.timeformat = 'hh';
+%-------- general plotting specification info -----------------------------
 
-% general analyzing options
+ spec_info.timeformat = 'hh';
+% spec_info.timeformat = 'mm/yyyy';
+%--------------------------------------------------------------------------
+
+%-------- general analyzing options ---------------------------------------
+
 mld_smooth = 0; % choose to smooth mixed layer depth or not
+%--------------------------------------------------------------------------
 
 % find the netCDF file
 dinfo = dir(fullfile('./*.nc'));
@@ -112,6 +117,8 @@ line_annotate(time,spec_info)
 
 u = out.u;
 v = out.v;
+u_stokes = out.u_stokes;
+v_stokes = out.v_stokes;
 
 % find where the mixed layer depth is in variable z
 ml_mask = out.z >= -repmat(mld',length(z),1);  
@@ -176,10 +183,22 @@ rotary_spec(f,p_cur,24/t_Coriolis,1)
 
 %% Turbulence Statistics
 
-tke = out.tke;
 eps = out.eps;
-
 u_star = out.u_taus; % waterside friction velocity
+
+%----- specify model parameters -------------------------------------------
+model_par.dtr0 = 0.2; % thermal expansion coefficient used in GOTM setup
+model_par.A1 = 0.92;
+model_par.B1 = 16.6;
+model_par.dt = dt;
+model_par.nsave = nsave;
+%--------------------------------------------------------------------------
+ 
+% compute turbulent fluxes
+[u_w, v_w, theta_w] = get_turb_flux(model_par,out);
+
+% compute variance of vertical turbulent velocity
+w_w = get_v_tke(model_par,u_w,v_w,theta_w,out); 
 
 %% Eddy Diffusivity
 
@@ -339,8 +358,6 @@ plot_time_depth(time,z,temp-temp_obs,spec_info)
 
 %% length scale
 
-L = out.L;
-
 spec_info.clim = [];
 spec_info.color = 'tempo';
 spec_info.save = 0;
@@ -349,7 +366,7 @@ spec_info.clabel = 'length scale ($$m$$)';
 spec_info.ylabel = 'depth (m)';
 spec_info.ylim = [zi(1) 0];
 
-plot_time_depth(time,zi,L,spec_info)
+plot_time_depth(time,zi,out.L,spec_info)
 
 hold on 
 line(time,-mld,'LineWidth',.1,'Color',[.3 .2 .1],'LineStyle','--')

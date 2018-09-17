@@ -37,6 +37,7 @@ elseif spec_info.clim == 'symmetric'
 else
     CL = spec_info.clim;
 end
+
 %% ------------------------------------------------------------------------
 
 cnum = 15;

@@ -16,17 +16,18 @@ line(time,zeros(size(time)),'LineWidth',.6,'Color',[.3 .3 .3],'LineStyle','--')
 % mark the net heat taken by the water column from surface measurement
 line([time(end) time(end)],[0 int_total(end)/10^(6)],'Color',...
     [.2 .2 .2],'LineStyle','-','LineWidth',4);
-text(time(end-7000),-int_total(end)/10^6,...
+text(time(end-8500),-int_total(end)/10^6,...
     ['net heat into the ocean $\sim$ ',num2str(round(int_total(end)/10^(6))),...
     ' $MJ/m^{2}$'],'fontname','computer modern','Interpreter','latex','fontsize',15)
 
 % figure specification
-spec_info.lgd_switch = 1;
+spec_info.grid_on = 1;
+spec_info.lgd = 1;
 spec_info.lgd_label = {'total heat exchange','surface heat flux',...
     'short wave radiation'};
 spec_info.x_time = 1;
 spec_info.ylabel = 'integrated heat ($MJ/m^{2}$)';
-spec_info.save_switch = 1;
+spec_info.save = 1;
 spec_info.save_path = './figs/int_heat';
 
 line_annotate(time,spec_info)
@@ -39,7 +40,11 @@ line_annotate(time,spec_info)
 % specific heat capacity - gsw_cp0, from GSW toolbox
 
 % depth z index 22 ~ upper 201.4027m
-HC = sum(rho(22:end,:).*(temp(22:end,:)+273.15).*h(22:end,:)*gsw_cp0); %[J/m^2]
+
+% HC = sum(rho(22:end,:).*(temp(22:end,:)+273.15).*h(22:end,:)*gsw_cp0); %[J/m^2]
+
+cp = 3985; % specific heat capacity from GOTM setup
+HC = sum(rho(22:end,:).*(temp(22:end,:)+273.15).*h(22:end,:)*cp); %[J/m^2]
 HC_delta = HC(end) - HC(1);
 HC_t = gradient(HC,dt*nsave); %[W/m^2]
 
@@ -76,7 +81,7 @@ text(time(end-2200),HC(end)/10^(6),...
 % mark the heat content change relative to observation
 line([time(end) time(end)],[HC(1)/10^(6) HC(end)/10^(6)],'Color',...
     [.1 .1 .1],'LineStyle','-','LineWidth',3);
-text(time(end-7000),HC(8800)/10^(6),[turb_method,...
+text(time(end-8500),HC(8800)/10^(6),[turb_method,...
     ' heat content change $\sim$ ',num2str(round((HC_delta-HC_delta_obs)/10^(6))),...
     ' $MJ/m^{2}$'],'Color',[.1 .1 .1],'fontname','computer modern',...
     'Interpreter','latex','fontsize',13)
@@ -84,7 +89,7 @@ text(time(end-7000),HC(8800)/10^(6),[turb_method,...
 % figure specification
 spec_info.lgd_label = {[turb_method,' HC'],'surface heat exchange','obs. HC'};
 spec_info.ylabel = 'heat content ($MJ/m^{2}$)';
-spec_info.save_switch = 1;
+spec_info.save = 1;
 spec_info.save_path = './figs/HC';
 
 line_annotate(time,spec_info)  
@@ -103,7 +108,7 @@ line(time,zeros(size(time)),'LineWidth',.6,'Color',[.5 .5 .5],'LineStyle',':')
 spec_info.lgd_label = {'surface heat exchange rate',...
     ['$\partial_{t}HC$ in ',turb_method]};
 spec_info.ylabel = 'temporal heat variation ($W/m^{2}$)';
-spec_info.save_switch = 1;
+spec_info.save = 1;
 spec_info.save_path = './figs/HC_t_surf';
 
 line_annotate(time,spec_info)
@@ -118,7 +123,7 @@ line(time,zeros(size(time)),'LineWidth',.6,'Color',[.5 .5 .5],'LineStyle',':')
 spec_info.lgd_label = {'$\partial_{t}HC$ in obs.', ...
     ['$\partial_{t}HC$ in ',turb_method]};
 spec_info.ylabel = 'temporal heat variation ($W/m^{2}$)';
-spec_info.save_switch = 1;
+spec_info.save = 1;
 spec_info.save_path = './figs/HC_t_obs';
 
 line_annotate(time,spec_info)
