@@ -4,6 +4,12 @@
 
 % Zhihua Zheng, UW-APL, Sep. 5 2018
 
+%% --------- read relevant variables --------------------------------------
+
+int_total = out.int_total;
+int_heat = out.int_heat;
+int_swr = out.int_swr;
+
 %% Plot integrated heat infor from observation ----------------------------
 
 figure('position', [0, 0, 900, 300])

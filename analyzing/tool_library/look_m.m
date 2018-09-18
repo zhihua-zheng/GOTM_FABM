@@ -1,4 +1,4 @@
-function test_m(mat)
+function look_m(mat)
 
 % test_m
 %==========================================================================
@@ -23,7 +23,6 @@ function test_m(mat)
 %  September 17 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 %
 
-
 contourf(mat,'LineStyle','none')
 
 cmocean('balance')
@@ -31,7 +30,6 @@ c_max = max(max(abs(mat)));
 caxis([-c_max c_max]);
 
 colorbar
-
 
 end
 

@@ -7,75 +7,7 @@
 
 %% General Configuration before Analysis
 
-clear
-
-% gather data info using dialog box
-
-prompt = {'GOTM root directory path:','Output directory path:',...
-    'Closure method used:','Time step (dt) used:',...
-    'Saving period (nsave) used:'};
-title = 'Specify Output Data Information';
-dims = [1 100];
-definput = {'~/Documents/GitLab/GOTM_dev/',...
-    'run/Idealized_Hurricane_Experiment/Idealized_Hurricane_SMCLT_20110401-20110404/STORAGE',...
-    'SMCLT','60','60'};
-data_info = inputdlg(prompt,title,dims,definput);
-
-% path
-cd ([data_info{1},data_info{2}])
-
-% simulation info
-turb_method = data_info{3};
-dt = str2double(data_info{4});
-nsave = str2double(data_info{5});
-
-
-% check ./figs folder
-if ~exist('figs/','dir') % if doesn't exist, create one
-    mkdir figs
-end
-
-
-%-------- general plotting specification info -----------------------------
-
- spec_info.timeformat = 'hh';
-% spec_info.timeformat = 'mm/yyyy';
-%--------------------------------------------------------------------------
-
-%-------- general analyzing options ---------------------------------------
-
-mld_smooth = 0; % choose to smooth mixed layer depth or not
-%--------------------------------------------------------------------------
-
-% find the netCDF file
-dinfo = dir(fullfile('./*.nc'));
-fname = fullfile('./',{dinfo.name});
-
-% load
-out = read_gotm_out(fname{:},2);
-
-% read general variables
-time = out.time;
-date = out.date;
-% dateVec = datevec(char(date));
-z = mean(out.z,2);
-zi = mean(out.zi,2);
-h = mean(out.h,2);
-int_total = out.int_total;
-int_heat = out.int_heat;
-int_swr = out.int_swr;
-
-
-sst = out.sst;
-sst_obs = out.sst_obs;
-temp = out.temp;
-temp_obs = out.temp_obs;
-sst_from_prof = temp(128,:)';
-
-buoy = out.buoy;
-NN = out.NN;
-rho = out.rho;
-
+init_analyze;
 
 %% Heat Content
 
@@ -91,7 +23,7 @@ f_Coriolis = gsw_f(out.lat); % [radian/s]
 % inertial period
 t_Coriolis = 2*pi/f_Coriolis/3600; % [hour]
 
-if mld_smooth == 1
+if mld_smooth
     % filter length (~ 3 inertial periods)
     filter_length = 3*t_Coriolis;
     win_size = ceil(filter_length*3600/(nsave*dt));
@@ -187,7 +119,7 @@ eps = out.eps;
 u_star = out.u_taus; % waterside friction velocity
 
 %----- specify model parameters -------------------------------------------
-model_par.dtr0 = 0.2; % thermal expansion coefficient used in GOTM setup
+model_par.dtr0 = -0.2; % thermal expansion coefficient used in GOTM setup
 model_par.A1 = 0.92;
 model_par.B1 = 16.6;
 model_par.dt = dt;
@@ -239,23 +171,6 @@ semilogx(nu_s_keps_pick,zi,'LineWidth',.4,'Color',[.4 .3 .5])
 
   export_fig ('./figs/keps_diffusivity_comparison_2011','-pdf','-transparent','-painters')
   % export_fig ('./figs/eddy_diffusivity_comparison_2011','-pdf','-transparent','-painters')
-
-%% SST
-
-figure('position', [0, 0, 900, 300])
-line(time,sst_from_prof,'LineWidth',.8,'Color',[.6 .4 .2])
-line(time,sst_obs,'LineWidth',.8,'Color',[.3 .6 .4])
-
-spec_info.grid_on = 0;
-spec_info.x_time = 1;
-spec_info.lgd = 1;
-spec_info.lgd_label = {'SMCLT','observation'};
-spec_info.ylabel = 'sea surface temperature ($$^{\circ}C$$)';
-spec_info.save = 1;
-spec_info.save_path = './figs/sst';
-
-line_annotate(time,spec_info)
-
 
 %% Mis-fit for Monthly Mean Temperature
 
@@ -327,6 +242,9 @@ line(time_obs,diff_kpp_shallow,'LineWidth',1,'Color',[.4 .2 .8])
 
 %% Evolution of Temperature Profile (prediction and observation)
 
+temp = out.temp;
+temp_obs = out.temp_obs;
+
 % model prediction
 spec_info.ylabel = 'depth ($$m$$)';
 spec_info.clim = [];
@@ -355,6 +273,28 @@ spec_info.save = 0;
 spec_info.save_path = './figs/temp_diff';
 
 plot_time_depth(time,z,temp-temp_obs,spec_info)
+
+
+%% SST
+
+sst = out.sst;
+sst_obs = out.sst_obs;
+sst_from_prof = temp(128,:)';
+
+figure('position', [0, 0, 900, 300])
+line(time,sst_from_prof,'LineWidth',.8,'Color',[.6 .4 .2])
+line(time,sst_obs,'LineWidth',.8,'Color',[.3 .6 .4])
+
+spec_info.grid_on = 0;
+spec_info.x_time = 1;
+spec_info.lgd = 1;
+spec_info.lgd_label = {'SMCLT','observation'};
+spec_info.ylabel = 'sea surface temperature ($$^{\circ}C$$)';
+spec_info.save = 1;
+spec_info.save_path = './figs/sst';
+
+line_annotate(time,spec_info)
+
 
 %% length scale
 
