@@ -119,9 +119,10 @@ eps = out.eps;
 u_star = out.u_taus; % waterside friction velocity
 
 %----- specify model parameters -------------------------------------------
-model_par.dtr0 = -0.2; % thermal expansion coefficient used in GOTM setup
+model_par.dtr0 = -0.2; % d_rho/d_theta
 model_par.A1 = 0.92;
 model_par.B1 = 16.6;
+model_par.rho_0 = 1027;
 model_par.dt = dt;
 model_par.nsave = nsave;
 %--------------------------------------------------------------------------

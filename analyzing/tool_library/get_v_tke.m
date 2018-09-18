@@ -36,8 +36,11 @@ dt = model_par.dt;
 nsave = model_par.nsave;
 A1 = model_par.A1;
 B1 = model_par.B1;
-alpha = model_par.dtr0;
 g = 9.81;
+
+% divided by (-rho_0) to get thermal expanison coefficient (positive)
+alpha = - model_par.dtr0/model_par.rho_0; 
+
 
 %% Deal with staggered grid
 
