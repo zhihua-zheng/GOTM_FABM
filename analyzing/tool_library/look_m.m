@@ -23,6 +23,7 @@ function look_m(mat)
 %  September 17 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 %
 
+figure('position', [0, 0, 900, 300])
 contourf(mat,'LineStyle','none')
 
 cmocean('balance')
