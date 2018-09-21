@@ -125,6 +125,7 @@ model_par.B1 = 16.6;
 model_par.rho_0 = 1027;
 model_par.dt = dt;
 model_par.nsave = nsave;
+model_par.rescale_r = 0;
 %--------------------------------------------------------------------------
  
 % compute turbulent fluxes

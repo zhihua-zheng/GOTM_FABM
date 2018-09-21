@@ -28,10 +28,21 @@ function w_w = get_v_tke(model_par, u_w, v_w, theta_w, out)
 %  September 16 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 %
 
+
+%% Note 
+
+% 1. After applying rescale of l/q according to Ozmidov scale, some l/q is
+%    still too large, causing negative vTKE, tracing back to very small
+%    buoyancy frequency.
+% 2. Not all the negative values of vTKE are due to l/q > 0.53/N. Found 3
+%    points except initial column. index = (1223, 1224, 8447). the middle
+%    one is the minimum of w_w.
+
 %% Read relevant variables
 q2 = 2*out.tke; 
 q = sqrt(q2); % turbulent velocity scale [m/s]
 
+rescale_r = model_par.rescale_r;
 dt = model_par.dt;
 nsave = model_par.nsave;
 A1 = model_par.A1;
@@ -61,11 +72,15 @@ NN_stable(NN_stable<0) = NaN;
 N = sqrt(NN_stable);
 N = interp2(T,Z,N,Ti,Zi,'linear');
 
+N(N==0) = NaN;
+
 l_over_q = L./q; % time scale for turbulence
 r_Ozm = 0.53./N; % time scale cooresponding to Ozmidov length scale 
 
 % replace the large values of l/q with r_Ozm
-l_over_q(l_over_q > r_Ozm) = r_Ozm(l_over_q > r_Ozm);
+if rescale_r
+    l_over_q(l_over_q > r_Ozm) = r_Ozm(l_over_q > r_Ozm);
+end
 
 %% Stokes shear
 [~, uStokes_z] = gradient(u_stokes,dt*nsave,out.z);

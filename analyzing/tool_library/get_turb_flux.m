@@ -29,6 +29,7 @@ function [u_w, v_w, theta_w] = get_turb_flux(model_par, out)
 %% TO-DO
 
 % 1. check if the velocity and temprature output are averaged quantities
+%    - Using these output as averaged quantities is ok!
 
 %% Note
 
