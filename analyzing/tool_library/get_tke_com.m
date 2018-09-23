@@ -1,15 +1,16 @@
-function w_w = get_v_tke(model_par, u_w, v_w, theta_w, out)
+function tke_comps = get_tke_com(model_par, u_w, v_w, theta_w, out)
 
-% get_turb_flux
+% get_tke_com
 %==========================================================================
 %
 % USAGE:
-%  [u_w, v_w, theta_w] = get_turb_flux()
+%  tke_comps = get_tke_com(model_par, u_w, v_w, theta_w, out)
 
 %
 % DESCRIPTION:
-%  Compute the turbulent momentum flux and turbulent heat flux using output
-%  from GOTM simulation
+%  Compute different components of turbulent kinetic energy (TKE) based on
+%  given information of the turbulent fluxes, length scale, TKE magnitude
+%  and SMC model setting.
 %
 % INPUT:
 %
@@ -21,13 +22,14 @@ function w_w = get_v_tke(model_par, u_w, v_w, theta_w, out)
 %
 % OUTPUT:
 %
-%  w_w - vertical turbulent kinetic energy (vTKE), vertical velocity
-%       fluctuation variance [m^2/s^2]
+%  tke_comps - 3-D matrix containning different components of TKE
+%  tke_comps(:,:,1) - horizontal(x) velocity fluctuation variance [m^2/s^2]
+%  tke_comps(:,:,2) - horizontal(y) velocity fluctuation variance [m^2/s^2]
+%  tke_comps(:,:,3) - vertical(z) velocity fluctuation variance [m^2/s^2]
 %
 % AUTHOR:
 %  September 16 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 %
-
 
 %% Note 
 
@@ -61,6 +63,8 @@ Ti = repmat(out.time',size(Zi,1),1);
 Z = out.z;
 T = repmat(out.time',size(Z,1),1);
 
+u = interp2(T,Z,out.u,Ti,Zi,'linear');
+v = interp2(T,Z,out.v,Ti,Zi,'linear');
 u_stokes = interp2(T,Z,out.u_stokes,Ti,Zi,'linear');
 v_stokes = interp2(T,Z,out.v_stokes,Ti,Zi,'linear');
 
@@ -72,8 +76,6 @@ NN_stable(NN_stable<0) = NaN;
 N = sqrt(NN_stable);
 N = interp2(T,Z,N,Ti,Zi,'linear');
 
-N(N==0) = NaN;
-
 l_over_q = L./q; % time scale for turbulence
 r_Ozm = 0.53./N; % time scale cooresponding to Ozmidov length scale 
 
@@ -82,14 +84,24 @@ if rescale_r
     l_over_q(l_over_q > r_Ozm) = r_Ozm(l_over_q > r_Ozm);
 end
 
+%% Eulerian shear
+[~, u_z] = gradient(u,dt*nsave,out.z);
+[~, v_z] = gradient(v,dt*nsave,out.z);
+
 %% Stokes shear
 [~, uStokes_z] = gradient(u_stokes,dt*nsave,out.z);
 [~, vStokes_z] = gradient(v_stokes,dt*nsave,out.z);
 
 %% Computation
 
-w_w = q2*(1-6*A1/B1)/3 + (6*A1*l_over_q).*(alpha*g*theta_w - ...
-    u_w.*uStokes_z - v_w.*vStokes_z);
+% u_u
+tke_comps(:,:,1) = q2*(1-6*A1/B1)/3 - (6*A1*l_over_q).*(u_w.*u_z);
 
+% v_v
+tke_comps(:,:,2) = q2*(1-6*A1/B1)/3 - (6*A1*l_over_q).*(v_w.*v_z);
+
+% w_w
+tke_comps(:,:,3) = q2*(1-6*A1/B1)/3 + (6*A1*l_over_q).*(alpha*g*theta_w...
+    -u_w.*uStokes_z - v_w.*vStokes_z);
 
 end
