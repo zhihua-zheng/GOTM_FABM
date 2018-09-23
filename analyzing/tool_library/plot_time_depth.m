@@ -28,7 +28,7 @@ function   plot_time_depth(t, d, scalar, spec_info)
 if isempty(spec_info.clim)
     
     CL = [min(min(scalar)) max(max(scalar))];  % default option
-elseif spec_info.clim == 'symmetric'
+elseif isstring(spec_info.clim) && spec_info.clim == 'symmetric'
     
     tmp1 = min(min(scalar));
     tmp2 = max(max(scalar));
@@ -38,21 +38,36 @@ else
     CL = spec_info.clim;
 end
 
-%% ------------------------------------------------------------------------
-
+%% Plot -------------------------------------------------------------------
 cnum = 15;
 conts = linspace(CL(1),CL(2),cnum);
 [T, Z] = meshgrid(t,d);
 
 figure('position', [0, 0, 980, 250])
-cmocean(spec_info.color)
-contourf(T,Z,scalar,conts,'LineWidth',0.01,'LineStyle','none')
 
+switch spec_info.plot_method
+    case 1
+        contourf(T,Z,scalar,conts,'LineWidth',0.01,'LineStyle','none')
+    case 2
+        [nr,nc] = size(scalar);
+        % padding the last row and column, since pcolor ignores them 
+        h = pcolor([T nan(nr,1); nan(1,nc+1)],...
+            [Z nan(nr,1); nan(1,nc+1)],[scalar nan(nr,1); nan(1,nc+1)]); 
+        set(h, 'EdgeColor', 'none');
+    case 3
+        imAlpha=ones(size(scalar));
+        imAlpha(isnan(scalar))=0; % set color of NaNs to background color
+        imagesc(t,d,scalar,'AlphaData',imAlpha)
+        % flip y axis, imagesc mapps the matrix from lower-left corner
+        axis('xy') 
+end
+
+cmocean(spec_info.color)
+
+%% Annotation -------------------------------------------------------------
   caxis(CL);
   box on
   datetick('x',spec_info.timeformat)
-%   title('COREII LAT-54 LON254 SMC 20080915-20090915 VR1m DT1800s',...
-%     'fontname','computer modern', 'fontsize', 14,'Interpreter', 'latex')
   ylabel(spec_info.ylabel, 'fontname', 'computer modern', 'fontsize', ...
       14,'Interpreter', 'latex')
   setDateAxes(gca,'XLim',[t(1) t(end)],'YLim',spec_info.ylim,'fontsize',...
