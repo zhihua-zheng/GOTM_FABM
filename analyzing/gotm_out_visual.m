@@ -45,7 +45,7 @@ spec_info.save_path = './figs/mld';
 
 line_annotate(time,spec_info)
 
-%% Inertial Currents
+%% Currents
 
 u = out.u;
 v = out.v;
@@ -111,28 +111,12 @@ rotary_spec(f,p_cur,24/t_Coriolis,1)
 %--------------------------------------------------------------------------
 
 % spec_info.save = 0;
+% spec_info.plot_method = 1;
 % plot_time_depth(time,z,abs(cur),spec_info)
 
-%% Turbulence Statistics
+%% Turbulence Statistics - turbulent fluxes & TKE components
 
-eps = out.eps;
-u_star = out.u_taus; % waterside friction velocity
-
-%----- specify model parameters -------------------------------------------
-model_par.dtr0 = -0.2; % d_rho/d_theta
-model_par.A1 = 0.92;
-model_par.B1 = 16.6;
-model_par.rho_0 = 1027;
-model_par.dt = dt;
-model_par.nsave = nsave;
-model_par.rescale_r = 0;
-%--------------------------------------------------------------------------
- 
-% compute turbulent fluxes
-[u_w, v_w, theta_w] = get_turb_flux(model_par,out);
-
-% compute variance of vertical turbulent velocity
-w_w = get_v_tke(model_par,u_w,v_w,theta_w,out); 
+tke_sub;
 
 %% Eddy Diffusivity
 
@@ -174,74 +158,6 @@ semilogx(nu_s_keps_pick,zi,'LineWidth',.4,'Color',[.4 .3 .5])
   export_fig ('./figs/keps_diffusivity_comparison_2011','-pdf','-transparent','-painters')
   % export_fig ('./figs/eddy_diffusivity_comparison_2011','-pdf','-transparent','-painters')
 
-%% Mis-fit for Monthly Mean Temperature
-
-load(ows_papa_2011_obs.mat); % load observation record of monthly profile
-tprof_keps = ones(250,24)*NaN;
-tprof_kpp = ones(250,24)*NaN;
-
-m = 1;
-for i = 2011:2012
-
-    for j = 1:12
-
-        index = find(dateVec(:,1)==i & dateVec(:,2)==j);
-        tprof_keps(:,m) = mean(temp_keps(:,index),2);
-        tprof_kpp(:,m) = mean(temp_kpp(:,index),2);
-        m = m + 1;
-    end
-
-end
-tprof_keps = tprof_keps(:,3:15);
-tprof_kpp = tprof_kpp(:,3:15);
-
-% interpolate the output averages into the observation depth
-tprof_keps_depth = ones(size(tprof_2011))*NaN;
-tprof_kpp_depth = ones(size(tprof_2011))*NaN;
-
-for i = 1:13
-
-    tprof_keps_depth(:,i) = interp1(z,tprof_keps(:,i),depth_t);
-    tprof_kpp_depth(:,i)= interp1(z,tprof_kpp(:,i),depth_t);
-end
-
-diff_keps = tprof_keps_depth - tprof_2011;
-diff_kpp = tprof_kpp_depth - tprof_2011;
-
-mis_rms_keps = rms(diff_keps,2);
-mis_rms_kpp = rms(diff_kpp,2);
-
-figure('position', [0, 0, 400, 700])
-line(mis_rms_keps,depth_t,'LineWidth',1,'Color',[.8 .7 .2])
-line(mis_rms_kpp,depth_t,'LineWidth',1,'Color',[.4 .2 .8])
-  box on
-  lgd = legend('$k-\varepsilon$','KPP','Location','best');
-  set(lgd,'Interpreter','latex','fontsize', 14)
-  ylabel('depth (m)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  xlabel('temperature misfit rms ($$^{\circ}C$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,...
-      'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
-
-  export_fig ('./figs/t_misfit_2011','-pdf','-transparent','-painters')
-
-% temporal evolution of mistfit for upper 100m (shallow)
-diff_keps_shallow = rms(diff_keps(1:18,:));
-diff_kpp_shallow = rms(diff_kpp(1:18,:));
-
-figure('position', [0, 0, 700, 400])
-line(time_obs,diff_keps_shallow,'LineWidth',1,'Color',[.8 .7 .2])
-line(time_obs,diff_kpp_shallow,'LineWidth',1,'Color',[.4 .2 .8])
-  box on
-  datetick('x','mmm')
-  lgd = legend('$k-\varepsilon$','KPP','Location','best');
-  set(lgd,'Interpreter','latex','fontsize', 14)
-  ylabel('upper 100m temperature misfit rms ($$^{\circ}C$$)', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  xlabel('time', 'fontname', 'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-  setDateAxes(gca,...
-      'fontsize',11,'fontname','computer modern','TickLabelInterpreter', 'latex')
-
-  export_fig ('./figs/t_misfit_time_2011','-pdf','-transparent','-painters')
-
 %% Evolution of Temperature Profile (prediction and observation)
 
 temp = out.temp;
@@ -252,6 +168,7 @@ spec_info.ylabel = 'depth ($$m$$)';
 spec_info.clim = [];
 spec_info.clabel = 'potential temperature ($$^{\circ}C$$)';
 spec_info.color = 'haline';
+spec_info.plot_method = 1;
 spec_info.ylim = [zi(1), 0];
 spec_info.save = 1;
 spec_info.save_path = './figs/temp';
