@@ -13,37 +13,10 @@ init_analyze;
 
 heat_content;
 
+
 %% Mixed Layer Depth (diagnosed from TKE threshold, mld_method = 1)
 
-% mixed layer depth data is really bad
-mld = out.mld_surf;
-
-% inertial frequency
-f_Coriolis = gsw_f(out.lat); % [radian/s]
-% inertial period
-t_Coriolis = 2*pi/f_Coriolis/3600; % [hour]
-
-if mld_smooth
-    % filter length (~ 3 inertial periods)
-    filter_length = 3*t_Coriolis;
-    win_size = ceil(filter_length*3600/(nsave*dt));
-    b = (1/win_size)*ones(1,win_size);
-    a = 1;
-    mld = filter(b,a,mld);
-end
-
-
-figure('position', [0, 0, 900, 300])
-line(time,-mld,'LineWidth',.4,'Color',[.2 .6 .9])
-
-spec_info.grid_on = 1;
-spec_info.x_time = 1;
-spec_info.lgd = 0;
-spec_info.ylabel = 'mixed layer depth (m)';
-spec_info.save = 1;
-spec_info.save_path = './figs/mld';
-
-line_annotate(time,spec_info)
+mixed_layer_d;
 
 %% Currents
 
