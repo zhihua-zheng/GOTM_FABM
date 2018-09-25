@@ -31,7 +31,7 @@ tke_comps_n = tke_comps./(repmat(u_star2',length(zi),1,3));
 spec_info.ylabel = 'depth ($$m$$)';
 spec_info.clim = [0 nanmax(nanmax(nanmax(tke_comps_n)))];
 spec_info.clabel = '$$\overline{w^{\prime}w^{\prime}}/u_{*}^{2}$$';
-spec_info.color = 'speed';
+spec_info.color = 'amp';
 spec_info.plot_method = 3;
 spec_info.ylim = [zi(1), 0];
 spec_info.save = 0;
@@ -49,3 +49,12 @@ plot_time_depth(time,zi,tke_comps_n(:,:,1),spec_info)
 spec_info.clabel = '$$\overline{v^{\prime}v^{\prime}}/u_{*}^{2}$$';
 spec_info.save_path = './figs/vv_norm';
 plot_time_depth(time,zi,tke_comps_n(:,:,2),spec_info)
+
+% 2*TKE 
+tke_n = 2*out.tke./(repmat(u_star2',251,1));
+
+spec_info.clabel = '$$q^{2}/u_{*}^{2}$$';
+spec_info.save_path = './figs/qq_norm';
+spec_info.clim = [];
+plot_time_depth(time,zi,tke_n,spec_info)
+
