@@ -24,25 +24,17 @@ wave_mdir = ncread(file,'waveMeanDirection');
 
 %% timestamp
 
-% get the reference time from the variable's attribute
-ncid = netcdf.open(file,'NC_NOWRITE');
 
-% varid is the variable ID for 'waveTime' in netCDF file
-varid = netcdf.inqVarID(ncid,'waveTime');
-
-% get the value of the attribute 'units'
-t_ref = netcdf.getAtt(ncid,varid,'units'); 
-
+% get the reference time
+t_ref = ncreadatt(file,'waveTime','units'); % get the attribute 'units' for 'time'
 t_ref = t_ref(15:end); % truncate to get the time string
-
 t_ref = datenum(t_ref, 'yyyy-mm-dd HH:MM:SS'); 
-netcdf.close(ncid);
 
 wave_time = double(t_ref + wave_time./3600/24);
 wave_date = datestr(wave_time,'yyyy/mm/dd HH:MM:SS');
 wave_date = string(wave_date);
 
-clear t_ref ncid varid 
+clear t_ref
 
 %% direction conversion
 

@@ -41,20 +41,17 @@ for i = 1:length(sub_folders)
         z = mean(squeeze(double(ncread(fname{:},'z'))),2);
         time = squeeze(double(ncread(fname{:},'time')));
         
-        % get the reference time from the variable's attribute
-        ncid = netcdf.open(fname{:},'NC_NOWRITE');
-        varid = netcdf.inqVarID(ncid,'time'); % varid is the variable ID for 'time' in netCDF file
-        t_ref = netcdf.getAtt(ncid,varid,'units'); % get the value of the attribute 'unit'
+        % get the reference time
+        t_ref = ncreadatt(fname,'time','units'); % get the attribute 'units' for 'time'
         t_ref = t_ref(15:end); % truncate to get the time string
         t_ref = datenum(t_ref, 'yyyy-mm-dd HH:MM:SS'); % datenumber for initialized time of simulation
-        netcdf.close(ncid);
 
         time = t_ref + time./3600/24;
         % date = string(datestr(time, 'yyyy/mm/dd HH:MM:SS'));
     end
 end
 
-clear t_ref ncid varid fname dinfo
+clear t_ref fname dinfo
 cd(main_dir)
 
 

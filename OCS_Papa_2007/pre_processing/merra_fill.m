@@ -37,13 +37,10 @@ for K = 1:24:(24*num_files-23)
   this_file = filenames{ceil(K/24)};
   slp(:,:,K:K+23) = ncread(this_file, ncvars{3});
   
-  % get the reference time from the variable's attribute
-  ncid = netcdf.open(this_file,'NC_NOWRITE');
-  varid = netcdf.inqVarID(ncid,'time'); % varid is the variable ID for 'time' in netCDF file
-  t_ref = netcdf.getAtt(ncid,varid,'units');
+  % get the reference time
+  t_ref = ncreadatt(this_file,'time','units'); % get the attribute 'units' for 'time'
   t_ref = t_ref(15:end); % truncate to the time string
   t_ref = datenum(t_ref, 'yyyy-mm-dd HH:MM:SS');
-  netcdf.close(ncid);
   
   % date numbers for the timestamp
   time_slp(K:K+23) = double(ncread(this_file, ncvars{4}))/(60*24) + t_ref;
@@ -85,13 +82,10 @@ for K = 1:24:(24*num_files-23)
   this_file = filenames{ceil(K/24)};
   ts(:,:,K:K+23) = ncread(this_file, ncvars{3});
   
-  % get the reference time from the variable's attribute
-  ncid = netcdf.open(this_file,'NC_NOWRITE');
-  varid = netcdf.inqVarID(ncid,'time'); % varid is the variable ID for 'time' in netCDF file
-  t_ref = netcdf.getAtt(ncid,varid,'units');
+  % get the reference time
+  t_ref = ncreadatt(this_file,'time','units'); % get the attribute 'units' for 'time'
   t_ref = t_ref(15:end); % truncate to the time string
   t_ref = datenum(t_ref, 'yyyy-mm-dd HH:MM:SS');
-  netcdf.close(ncid);
   
   % date numbers for the timestamp
   time_sst(K:K+23) = double(ncread(this_file, ncvars{4}))/(60*24) + t_ref;
@@ -133,13 +127,10 @@ for K = 1:24:(24*num_files-23)
   this_file = filenames{ceil(K/24)};
   rainfall(:,:,K:K+23) = ncread(this_file, ncvars{3});
   
-  % get the reference time from the variable's attribute
-  ncid = netcdf.open(this_file,'NC_NOWRITE');
-  varid = netcdf.inqVarID(ncid,'time'); % varid is the variable ID for 'time' in netCDF file
-  t_ref = netcdf.getAtt(ncid,varid,'units');
+  % get the reference time
+  t_ref = ncreadatt(this_file,'time','units'); % get the attribute 'units' for 'time'
   t_ref = t_ref(15:end); % truncate to the time string
   t_ref = datenum(t_ref, 'yyyy-mm-dd HH:MM:SS');
-  netcdf.close(ncid);
   
   % date numbers for the timestamp
   time_rainfall(K:K+23) = double(ncread(this_file, ncvars{4}))/(60*24) + t_ref;
@@ -158,5 +149,5 @@ rain_r(bad_rain) = rainfall_papa;
 
 %% clean
 
-clear ncid varid t_ref
+clear t_ref
 
