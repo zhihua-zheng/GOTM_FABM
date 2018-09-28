@@ -180,7 +180,7 @@ tprof_r = gsw_pt0_from_t(sprof_r,tprof_depth_s,Z_s);
 
 %% compute surface flux
 
-% momentum flux = surface wind stress
+% momentum flux = - surface wind stress
 %
 % net heatflux (positive in) = - latent heat flux (positive out) - sensible 
 % heat flux (positive out) + net longwave radiation (positive in)
