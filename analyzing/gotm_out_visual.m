@@ -151,7 +151,7 @@ plot_time_depth(time,z,temp,spec_info)
 % observation
 spec_info.clim = [min(min(temp)) max(max(temp))];
 spec_info.clabel = 'obs. potential temperature ($$^{\circ}C$$)';
-spec_info.color = 'matter';
+spec_info.color = 'haline';
 spec_info.save = 1;
 spec_info.save_path = './figs/temp_obs';
 

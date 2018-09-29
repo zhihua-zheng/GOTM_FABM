@@ -41,7 +41,7 @@ ts = struct();
 ftpobj = ftp('data.ndbc.noaa.gov');
 cd(ftpobj,'/data/oceansites/DATA_GRIDDED/PAPA');
 fname = 'OS_PAPA_200706_M_TSVM_50N145W_dy.nc';
-mget(ftpobj,fname)
+mget(ftpobj,fname);
 close(ftpobj)
 
 %% read variables
@@ -49,17 +49,20 @@ close(ftpobj)
 time = ncread(fname,'TIME');
 t_ref = ncreadatt(fname,'TIME','units');
 t_ref = t_ref(12:end);
-t_ref = datenum(t_ref, 'yyyy-mm-ddTHH:MM:SSZ');
+t_ref = datenum(t_ref,'yyyy-mm-ddTHH:MM:SSZ');
 time = time + t_ref; % days since t_ref
 ts.time = time(end);
+ts.date = string(datestr(ts.time,'yyyy-mm-dd HH:MM:SS'));
 
-ts.depth_t = double(ncread(fname,'DEPTH'));
+depth_t = double(ncread(fname,'DEPTH'));
+ts.depth_t = depth_t(1:end-1); % eliminate the erroneous depth
 t_prof = ncread(fname,'TEMP',[1 1 1 length(time)],[1 1 Inf 1]);
-ts.t_prof = squeeze(squeeze(t_prof));
+ts.t_prof = squeeze(squeeze(t_prof(1:end-1)));
 
-ts.depth_s = double(ncread(fname,'DEPPSAL'));
+depth_s = double(ncread(fname,'DEPPSAL'));
+ts.depth_s = depth_s(1:end-1);
 s_prof = ncread(fname,'PSAL',[1 1 1 length(time)],[1 1 Inf 1]);
-ts.s_prof = squeeze(squeeze(s_prof));
+ts.s_prof = squeeze(squeeze(s_prof(1:end-1)));
 
 %% clean
 delete(fname);

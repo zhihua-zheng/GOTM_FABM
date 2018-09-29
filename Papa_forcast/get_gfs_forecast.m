@@ -39,18 +39,19 @@ url_fmt = 'http://nomads.ncep.noaa.gov:9090/dods/gfs_0p25_1hr/gfs%s/gfs_0p25_1hr
 % get the latest forecast (could also grab a few days back for comparison):
 gfs.url =  sprintf(url_fmt,datestr(now,'yyyymmdd'));
 
-%nc = ncinfo(url); % don't really need it once we know variable names
+%nc = ncinfo(gfs.url); % don't really need it once we know variable names
 
-t = ncread(url,'time');
+t = ncread(gfs.url,'time');
 % Mtime = t-736953+datenum(2018,9,15); % their date reference is somewhat strange, this fixes it
-t_ref = ncreadatt(url,'time','units'); % get the attribute 'unit' for 'time'
+t_ref = ncreadatt(gfs.url,'time','units'); % get the attribute 'unit' for 'time'
 disp(['The unit for time in netCDF file is: ', t_ref])
 gfs.time = 365 + t;
 gfs.yd = gfs.time - datenum('01-Jan-2018') + 1; 
+gfs.date = datestr(gfs.time,'yyyy-mm-dd HH:MM:SS');
 
 %% find the closest grid point indices:
-lon = ncread(url,'lon');
-lat = ncread(url,'lat');
+lon = ncread(gfs.url,'lon');
+lat = ncread(gfs.url,'lat');
 [~,ilon] = min(abs(lon-lon0));
 [~,ilat] = min(abs(lat-lat0));
 disp([ilon lon(ilon)-360 ilat lat(ilat) ])
@@ -62,28 +63,28 @@ disp([ilon lon(ilon)-360 ilat lat(ilat) ])
 
 %% wind speed...
 disp('get wind speed...')
-gfs.u = squeeze(ncread(url,'ugrd10m',[ilon ilat 1],[1 1 inf])); %** 10 m above ground u-component of wind [m/s] 
-gfs.v = squeeze(ncread(url,'vgrd10m',[ilon ilat 1],[1 1 inf])); %** 10 m above ground v-component of wind [m/s] 
+gfs.u = squeeze(ncread(gfs.url,'ugrd10m',[ilon ilat 1],[1 1 inf])); %** 10 m above ground u-component of wind [m/s] 
+gfs.v = squeeze(ncread(gfs.url,'vgrd10m',[ilon ilat 1],[1 1 inf])); %** 10 m above ground v-component of wind [m/s] 
 W = complex(gfs.u,gfs.v);
 
 %% wind stress...  Switch sign to oceanographic convention
 disp('get momentum flux...');
 
-gfs.tau_x = squeeze(ncread(url,'uflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, u-component [n/m^2] 
-gfs.tau_y = squeeze(ncread(url,'vflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, v-component [n/m^2] 
+gfs.tau_x = squeeze(ncread(gfs.url,'uflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, u-component [n/m^2] 
+gfs.tau_y = squeeze(ncread(gfs.url,'vflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, v-component [n/m^2] 
 % tau = complex(gfs.tau_x,gfs.tau_y);
 
 %% Fluxes
 disp('get heat fluxes...')
-latent= -squeeze(ncread(url,'lhtflsfc',[ilon ilat 1],[1 1 inf])); % sign switched
-sens=   -squeeze(ncread(url,'shtflsfc',[ilon ilat 1],[1 1 inf])); % sign switched
+latent= -squeeze(ncread(gfs.url,'lhtflsfc',[ilon ilat 1],[1 1 inf])); % sign switched
+sens=   -squeeze(ncread(gfs.url,'shtflsfc',[ilon ilat 1],[1 1 inf])); % sign switched
 
 disp('get radiations...')
-swd=squeeze(ncread(url,'dswrfsfc',[ilon ilat 1],[1 1 inf]));
-swu=squeeze(ncread(url,'uswrfsfc',[ilon ilat 1],[1 1 inf]));
-lwd=squeeze(ncread(url,'dlwrfsfc',[ilon ilat 1],[1 1 inf]));
-lwu=squeeze(ncread(url,'ulwrfsfc',[ilon ilat 1],[1 1 inf]));
-rain=squeeze(ncread(url,'pratesfc',[ilon ilat 1],[1 1 inf])); % kg/m^2/s
+swd=squeeze(ncread(gfs.url,'dswrfsfc',[ilon ilat 1],[1 1 inf]));
+swu=squeeze(ncread(gfs.url,'uswrfsfc',[ilon ilat 1],[1 1 inf]));
+lwd=squeeze(ncread(gfs.url,'dlwrfsfc',[ilon ilat 1],[1 1 inf]));
+lwu=squeeze(ncread(gfs.url,'ulwrfsfc',[ilon ilat 1],[1 1 inf]));
+rain=squeeze(ncread(gfs.url,'pratesfc',[ilon ilat 1],[1 1 inf])); % kg/m^2/s
 rain=rain/1000; % m/s
 gfs.rain = rain*1000/3600; % mm/hr
 
@@ -94,7 +95,7 @@ gfs.sw=swd-swu;
 lw=lwd-lwu;
 
 % double check: short wave radiation is not included in total heat flux (GOTM)
-Q=lw+sw+latent+sens;  % CHECKED SIGNS WITH NOAA MOORING
+Q=lw+gfs.sw+latent+sens;  % CHECKED SIGNS WITH NOAA MOORING
 gfs.hf = lw + latent + sens;
 
 t_stamp=datestr(now,'yymmddHHMMSS');
@@ -113,7 +114,7 @@ plot(gfs.yd,gfs.sw,gfs.yd,lw,gfs.yd,latent,gfs.yd,sens);
 hold on
 plot(gfs.yd,Q,'k-','LineWidth',2);
 legend('sw','lw','latent','sens','Total');
-title(url,'interpreter','none');
+title(gfs.url,'interpreter','none');
 
 subplot(3,1,2);
 plot(gfs.time,gfs.u,gfs.time,gfs.v);
@@ -133,7 +134,7 @@ datetick x keeplimits
 title('Stress');
 
 %% save the fig
-print([ './figs' t_stamp '.png' ],'-dpng');
-
+print([ 'figs/' t_stamp '.png' ],'-dpng');
+disp('done!')
 
 end
