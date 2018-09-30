@@ -1,10 +1,10 @@
-function gfs = get_gfs_forecast(lon,lat)
+function gfs = get_gfs_forecast(lon,lat,t_0)
 
 % get_gfs_forecast
 %==========================================================================
 %
 % USAGE:
-%  gfs = get_gfs_forecast(lon,lat)
+%  gfs = get_gfs_forecast(lon,lat,t_0)
 %
 % DESCRIPTION:
 %  Function to retrieve meteorological forecast data from Global Forecast 
@@ -14,6 +14,7 @@ function gfs = get_gfs_forecast(lon,lat)
 %
 %  lon - longitude for interested station ([0~360),decimal degree)
 %  lat - latitude for interested station ([-90~90],decimal degree)
+%  t_0 - starting time for forecast time series (YYYYMMDD)
 %
 % OUTPUT:
 %
@@ -35,16 +36,18 @@ lat0 = lat;
 
 % GrADS data server for GFS forecast, using 0.25 degree resolution 
 url_fmt = 'http://nomads.ncep.noaa.gov:9090/dods/gfs_0p25_1hr/gfs%s/gfs_0p25_1hr_00z'; % there are also 06z, 12z, 18z...
+% chosse 00z since the T-S profile data at OCSPapa is published as 00z
 
-% get the latest forecast (could also grab a few days back for comparison):
-gfs.url =  sprintf(url_fmt,datestr(now,'yyyymmdd'));
+% get the forecast since t_0 (could also grab a few days back for comparison):
+gfs.url =  sprintf(url_fmt,t_0);
+disp(['Get the GFS forecast since ', t_0, ' ...']);
 
 %nc = ncinfo(gfs.url); % don't really need it once we know variable names
 
 t = ncread(gfs.url,'time');
 % Mtime = t-736953+datenum(2018,9,15); % their date reference is somewhat strange, this fixes it
 t_ref = ncreadatt(gfs.url,'time','units'); % get the attribute 'unit' for 'time'
-disp(['The unit for time in netCDF file is: ', t_ref])
+disp(['The unit for time in GFS netCDF file is: ', t_ref])
 gfs.time = 365 + t;
 gfs.yd = gfs.time - datenum('01-Jan-2018') + 1; 
 gfs.date = datestr(gfs.time,'yyyy-mm-dd HH:MM:SS');
@@ -54,7 +57,7 @@ lon = ncread(gfs.url,'lon');
 lat = ncread(gfs.url,'lat');
 [~,ilon] = min(abs(lon-lon0));
 [~,ilat] = min(abs(lat-lat0));
-disp([ilon lon(ilon)-360 ilat lat(ilat) ])
+% disp([ilon lon(ilon)-360 ilat lat(ilat) ])
 
 % ... or just hard-wire for OWS-P location (50,-145)
 % ilon = 861;
@@ -62,24 +65,24 @@ disp([ilon lon(ilon)-360 ilat lat(ilat) ])
 % return
 
 %% wind speed...
-disp('get wind speed...')
+disp('get wind speed ...')
 gfs.u = squeeze(ncread(gfs.url,'ugrd10m',[ilon ilat 1],[1 1 inf])); %** 10 m above ground u-component of wind [m/s] 
 gfs.v = squeeze(ncread(gfs.url,'vgrd10m',[ilon ilat 1],[1 1 inf])); %** 10 m above ground v-component of wind [m/s] 
 W = complex(gfs.u,gfs.v);
 
 %% wind stress...  Switch sign to oceanographic convention
-disp('get momentum flux...');
+disp('get momentum flux ...');
 
 gfs.tau_x = squeeze(ncread(gfs.url,'uflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, u-component [n/m^2] 
 gfs.tau_y = squeeze(ncread(gfs.url,'vflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, v-component [n/m^2] 
 % tau = complex(gfs.tau_x,gfs.tau_y);
 
 %% Fluxes
-disp('get heat fluxes...')
+disp('get heat fluxes ...')
 latent= -squeeze(ncread(gfs.url,'lhtflsfc',[ilon ilat 1],[1 1 inf])); % sign switched
 sens=   -squeeze(ncread(gfs.url,'shtflsfc',[ilon ilat 1],[1 1 inf])); % sign switched
 
-disp('get radiations...')
+disp('get radiations ...')
 swd=squeeze(ncread(gfs.url,'dswrfsfc',[ilon ilat 1],[1 1 inf]));
 swu=squeeze(ncread(gfs.url,'uswrfsfc',[ilon ilat 1],[1 1 inf]));
 lwd=squeeze(ncread(gfs.url,'dlwrfsfc',[ilon ilat 1],[1 1 inf]));
@@ -105,7 +108,7 @@ t_stamp=datestr(now,'yymmddHHMMSS');
 
 %% visualization
 
-disp('plot...')
+disp('plot ...')
 
 figure('position',[ 520   221   656   677 ]);
 
