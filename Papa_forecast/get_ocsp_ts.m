@@ -41,6 +41,7 @@ ts = struct();
 ftpobj = ftp('data.ndbc.noaa.gov');
 cd(ftpobj,'/data/oceansites/DATA_GRIDDED/PAPA');
 fname = 'OS_PAPA_200706_M_TSVM_50N145W_dy.nc';
+%fname = 'OS_PAPA_200706_M_TSVMBP_50N145W_hr.nc';
 mget(ftpobj,fname);
 close(ftpobj)
 
