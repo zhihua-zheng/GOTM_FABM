@@ -27,6 +27,8 @@ function rotary_spec(f, p_cur, f_in, save_switch)
 
 n = length(f);
 
+figure('position', [0, 0, 780, 350])
+
 % counter-clockwise, negative
 loglog(f(1:n/2),p_cur(1:n/2),'Color',[.1 .6 .7],'LineStyle','-','LineWidth',.3) 
 hold on

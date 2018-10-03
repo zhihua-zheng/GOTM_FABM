@@ -71,10 +71,11 @@ gfs.v = squeeze(ncread(gfs.url,'vgrd10m',[ilon ilat 1],[1 1 inf])); %** 10 m abo
 W = complex(gfs.u,gfs.v);
 
 %% wind stress...  Switch sign to oceanographic convention
-disp('get momentum flux ...');
+disp('get wind stress ...');
 
-gfs.tau_x = squeeze(ncread(gfs.url,'uflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, u-component [n/m^2] 
-gfs.tau_y = squeeze(ncread(gfs.url,'vflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, v-component [n/m^2] 
+% sign switched to represent surface stress
+gfs.tau_x = -squeeze(ncread(gfs.url,'uflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, u-component [n/m^2] 
+gfs.tau_y = -squeeze(ncread(gfs.url,'vflxsfc',[ilon ilat 1],[1 1 inf])); % ** surface momentum flux, v-component [n/m^2] 
 % tau = complex(gfs.tau_x,gfs.tau_y);
 
 %% Fluxes

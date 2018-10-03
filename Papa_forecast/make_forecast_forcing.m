@@ -58,7 +58,7 @@ lat =  50+22/60;
 gfs = get_gfs_forecast(lon,lat,time);
 
 
-%% momentum flux file
+%% surface stress file
 
 fileID = fopen([basecase,'/tau_file.dat'],'w');
 H = [cellstr(gfs.date) num2cell(gfs.tau_x) num2cell(gfs.tau_y)];

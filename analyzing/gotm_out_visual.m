@@ -13,7 +13,6 @@ init_analyze;
 
 heat_content;
 
-
 %% Mixed Layer Depth (diagnosed from TKE threshold, mld_method = 1)
 
 mixed_layer_d;
@@ -51,7 +50,7 @@ cur_a(ml_mask(end,:) == 0) = 0; % avoid NaN when mld is 0
 
 % temporal evolution of current vector vertex
 
-hodogram(time, cur_a)
+hodogram_t(time, cur_a)
   
 %------- FFT power spectral density estimate ------------------------------
 
@@ -133,9 +132,6 @@ semilogx(nu_s_keps_pick,zi,'LineWidth',.4,'Color',[.4 .3 .5])
 
 %% Evolution of Temperature Profile (prediction and observation)
 
-temp = out.temp;
-temp_obs = out.temp_obs;
-
 % model prediction
 spec_info.ylabel = 'depth ($$m$$)';
 spec_info.clim = [];
@@ -196,7 +192,8 @@ spec_info.save = 0;
 spec_info.save_path = './figs/length';
 spec_info.clabel = 'length scale ($$m$$)';
 spec_info.ylabel = 'depth (m)';
-spec_info.ylim = [zi(1) 0];
+spec_info.ylim = [zi(80) 0];
+spec_info.plot_method = 1;
 
 plot_time_depth(time,zi,out.L,spec_info)
 
