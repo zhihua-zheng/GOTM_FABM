@@ -1,6 +1,6 @@
 # ignore model setup files
 OCS_Papa_2007/setup_files/
-Papa_forcast/forcing_files/
+Papa_forecast/input_data/
 
 # ignore data file
 *.nc

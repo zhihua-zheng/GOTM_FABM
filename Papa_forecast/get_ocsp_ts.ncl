@@ -42,19 +42,32 @@ begin
 
   ; temperature profile
   depth_t = f->DEPTH
-  ;depth_t = depth_t(0:dimsizes(depth_t)-2) ; eliminate the erroneous depth
   tprof = f->TEMP(t_length-1,:,0,0)
-  ;tprof = tprof(0:dimsizes(tprof)-2))
 
   ; salinity profile
   depth_s = f->DEPPSAL
-  ;depth_s = depth_s(0:dimsizes(depth_s)-2) ; eliminate the erroneous depth
   sprof = f->PSAL(t_length-1,:,0,0)
-  ;sprof = sprof(0:dimsizes(sprof)-2))
 
-  ; get the date string
+  ; get the date string for mooring data
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
-  date = cd_string(t,"%Y-%N-%D %H:%M:%S")
+  mooring_date = cd_string(t,"%Y-%N-%D %H:%M:%S")
+
+  ; get date for yesterday
+  yest_date = systemfunc("date -v-1d +%F")
+  format = "%Y-%N-%D"
+
+  load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_inv_string.ncl"
+  yest_t = cd_inv_string(yest_date,format)
+  format@units = t@units
+
+  ; if the mooring data is delayed by more than one day, then use the mooring
+  ; data as from yesterday, hence the GFS forecast data can update as usual.
+  if ((yest_t-t) .gt. 0) then
+    date = cd_string(yest_t,"%Y-%N-%D %H:%M:%S")
+    ; mooring data usually delays one day
+  else
+    date = mooring_date
+  end if
 
   ;---- EXPORTATION TO ASCII FILES ----------------------------------------------
 
@@ -67,8 +80,7 @@ begin
                              ;              set to nearest non-missing value
 
   ; the directory storing forcing data
-  GOTMWORK_ROOT = "~/Documents/GitLab/GOTM_dev/gotmwork"
-  basecase = getenv("GOTMWORK_ROOT") + "/data/OCSPapa_forecast"
+  basecase = getenv("PROCESS_ROOT") + "/Papa_forecast/input_data"
 
   file_I = basecase+"/tprof_file.dat"
   system("/bin/rm -f "+file_I)   ; remove any pre-existing file
