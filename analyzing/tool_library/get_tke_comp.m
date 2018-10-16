@@ -1,10 +1,10 @@
-function tke_comps = get_tke_com(model_par, u_w, v_w, theta_w, out)
+function tke_comps = get_tke_comp(model_par, out, rotate_w)
 
-% get_tke_com
+% get_tke_comp
 %==========================================================================
 %
 % USAGE:
-%  tke_comps = get_tke_com(model_par, u_w, v_w, theta_w, out)
+%  tke_comps = get_tke_comp(model_par, u_w, v_w, theta_w, out)
 
 %
 % DESCRIPTION:
@@ -54,19 +54,30 @@ g = 9.81;
 % divided by (-rho_0) to get thermal expanison coefficient (positive)
 alpha = - model_par.dtr0/model_par.rho_0; 
 
-%% Deal with staggered grid
+%% Rotation of coordinate and deal with staggered grid
 
 % This interpolation approach may need to be modified in future
-
 Zi = out.zi;
 Ti = repmat(out.time',size(Zi,1),1);
 Z = out.z;
 T = repmat(out.time',size(Z,1),1);
+    
+if rotate_w
+    
+     new_vec = rotate_coor(out);
 
-u = interp2(T,Z,out.u,Ti,Zi,'linear');
-v = interp2(T,Z,out.v,Ti,Zi,'linear');
-u_stokes = interp2(T,Z,out.u_stokes,Ti,Zi,'linear');
-v_stokes = interp2(T,Z,out.v_stokes,Ti,Zi,'linear');
+     u = new_vec.u;
+     v = new_vec.v;
+     u_stokes = new_vec.u_stokes;
+     v_stokes = new_vec.v_stokes;
+else
+    u = interp2(T,Z,out.u,Ti,Zi,'linear');
+    v = interp2(T,Z,out.v,Ti,Zi,'linear');
+    u_stokes = interp2(T,Z,out.u_stokes,Ti,Zi,'linear');
+    v_stokes = interp2(T,Z,out.v_stokes,Ti,Zi,'linear');
+end
+
+temp = interp2(T,Z,out.temp,Ti,Zi,'linear');
 
 %% Rescale l/q under stable stratification
 
@@ -92,7 +103,17 @@ end
 [~, uStokes_z] = gradient(u_stokes,dt*nsave,out.z);
 [~, vStokes_z] = gradient(v_stokes,dt*nsave,out.z);
 
+%% Temperature gradient
+[~, temp_z] = gradient(temp,dt*nsave,out.z);
+
+%% Turbulence fluxes
+u_w = -(out.nu_m.*u_z + out.nu_cl.*uStokes_z);
+v_w = -(out.nu_m.*v_z + out.nu_cl.*vStokes_z);
+theta_w = -(out.nu_h.*temp_z);
+
 %% Computation
+
+% TO-DO: update the formula according to H15, surface proximity function
 
 % u_u
 tke_comps(:,:,1) = q2*(1-6*A1/B1)/3 - (6*A1*l_over_q).*(u_w.*u_z);
