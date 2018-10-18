@@ -1,10 +1,10 @@
-function [u_w, v_w, theta_w] = get_turb_flux(model_par, out)
+function [u_w, v_w, theta_w] = get_turb_flux(out, rotate_w)
 
 % get_turb_flux
 %==========================================================================
 %
 % USAGE:
-%  [u_w, v_w, theta_w] = get_turb_flux()
+%  [u_w, v_w, theta_w] = get_turb_flux(model_par, out, rotate_w)
 
 %
 % DESCRIPTION:
@@ -15,7 +15,9 @@ function [u_w, v_w, theta_w] = get_turb_flux(model_par, out)
 %
 %  model_par - A struct containing parameters used in the model
 %  out - A struct containing all the model output from GOTM
-%
+%  rotate_w - 1 or 0 (1 represents rotating current according to wind to 
+%    get downwind and crosswind component)
+% 
 % OUTPUT:
 %
 %  u_w - turbulent x-momentum flux [m^2/s^2]
@@ -38,38 +40,47 @@ function [u_w, v_w, theta_w] = get_turb_flux(model_par, out)
 
 %% Read relevant variables
 
-dt = model_par.dt;
-nsave = model_par.nsave;
+z = mean(out.z,2);
+temp = out.temp;
 
-%% Deal with staggered grid
+% sacrifice data at both end of z-direction, staggered grid
+nu_m = out.nu_m(2:end-1,:);
+nu_h = out.nu_h(2:end-1,:);
+nu_cl = out.nu_cl(2:end-1,:);
 
-% This interpolation approach may need to be modified in future
+%% Rotation of coordinate
 
-Zi = out.zi;
-Ti = repmat(out.time',size(Zi,1),1);
-Z = out.z;
-T = repmat(out.time',size(Z,1),1);
-
-u = interp2(T,Z,out.u,Ti,Zi,'linear');
-v = interp2(T,Z,out.v,Ti,Zi,'linear');
-u_stokes = interp2(T,Z,out.u_stokes,Ti,Zi,'linear');
-v_stokes = interp2(T,Z,out.v_stokes,Ti,Zi,'linear');
-temp = interp2(T,Z,out.temp,Ti,Zi,'linear');
+% The interpolation approach has been changed to use center_diff instead
+    
+if rotate_w
+    
+     new_vec = rotate_coor(out);
+     
+     u = new_vec.u;
+     v = new_vec.v;
+     u_stokes = new_vec.u_stokes;
+     v_stokes = new_vec.v_stokes;
+else
+    u = out.u;
+    v = out.v;
+    u_stokes = out.u_stokes;
+    v_stokes = out.v_stokes;
+end
 
 %% Eulerian shear
-[~, u_z] = gradient(u,dt*nsave,out.z);
-[~, v_z] = gradient(v,dt*nsave,out.z);
+u_z = center_diff(u,z,1);
+v_z = center_diff(v,z,1);
 
 %% Stokes shear
-[~, uStokes_z] = gradient(u_stokes,dt*nsave,out.z);
-[~, vStokes_z] = gradient(v_stokes,dt*nsave,out.z);
+uStokes_z = center_diff(u_stokes,z,1);
+vStokes_z = center_diff(v_stokes,z,1);
 
 %% Temperature gradient
-[~, temp_z] = gradient(temp,dt*nsave,out.z);
+temp_z = center_diff(temp,z,1);
 
 %% Computation
-u_w = -(out.nu_m.*u_z + out.nu_cl.*uStokes_z);
-v_w = -(out.nu_m.*v_z + out.nu_cl.*vStokes_z);
-theta_w = -(out.nu_h.*temp_z);
+u_w = -(nu_m.*u_z + nu_cl.*uStokes_z);
+v_w = -(nu_m.*v_z + nu_cl.*vStokes_z);
+theta_w = -(nu_h.*temp_z);
 
 end

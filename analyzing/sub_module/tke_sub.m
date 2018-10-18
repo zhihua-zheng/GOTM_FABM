@@ -14,11 +14,9 @@ model_par.nsave = nsave;
 model_par.rescale_r = 1;
 
 %% ----- computation ------------------------------------------------------
-% compute turbulent fluxes 
-[u_w, v_w, theta_w] = get_turb_flux(model_par,out);
 
 % compute components of TKE
-tke_comps = get_tke_com(model_par,u_w,v_w,theta_w,out);
+tke_comps = get_tke_comp(model_par,out,1);
 tke_comps(tke_comps<0) = NaN;
 
 % water-side friction velocity square
@@ -27,25 +25,26 @@ u_star2 = sqrt(out.tx.^2 + out.ty.^2);
 % normalize TKE components by water-side friction velocity
 tke_comps_n = tke_comps./(repmat(u_star2',length(zi),1,3));
 
-%% ----- plot -------------------------------------------------------------
+%% ----- plot evolution of column -----------------------------------------
 spec_info.ylabel = 'depth ($$m$$)';
 spec_info.clim = [0 nanmax(nanmax(nanmax(tke_comps_n)))];
+%spec_info.clim = [];
 spec_info.clabel = '$$\overline{w^{\prime}w^{\prime}}/u_{*}^{2}$$';
-spec_info.color = 'amp';
+spec_info.color = 'tempo';
 spec_info.plot_method = 3;
 spec_info.ylim = [zi(1), 0];
-spec_info.save = 0;
+spec_info.save = 1;
 spec_info.save_path = './figs/ww_norm';
 
 % z-direction TKE
 plot_time_depth(time,zi,tke_comps_n(:,:,3),spec_info)
 
-% x-direction TKE
+% downwind-direction TKE
 spec_info.clabel = '$$\overline{u^{\prime}u^{\prime}}/u_{*}^{2}$$';
 spec_info.save_path = './figs/uu_norm';
 plot_time_depth(time,zi,tke_comps_n(:,:,1),spec_info)
 
-% y-direction TKE
+% crosswind-direction TKE
 spec_info.clabel = '$$\overline{v^{\prime}v^{\prime}}/u_{*}^{2}$$';
 spec_info.save_path = './figs/vv_norm';
 plot_time_depth(time,zi,tke_comps_n(:,:,2),spec_info)
@@ -55,6 +54,21 @@ tke_n = 2*out.tke./(repmat(u_star2',251,1));
 
 spec_info.clabel = '$$q^{2}/u_{*}^{2}$$';
 spec_info.save_path = './figs/qq_norm';
-spec_info.clim = [];
+%spec_info.clim = [];
 plot_time_depth(time,zi,tke_n,spec_info)
 
+%% ---- plot time averaged profiles ---------------------------------------
+
+% TO-DO: how to choos the averaging length?
+
+del_t = 3; % box length ~ 3 hours
+new_t_length = floor(length(time)/del_t);
+tke_comps_n_av = nan(length(zi),new_t_length,3);
+
+for i = 1:new_t_length
+    
+    tke_comps_n_av(:,i,:) = nanmean(tke_comps_n(:,(i-1)*del_t+1:i*del_t,:),2);
+end
+
+plot(tke_comps_n(:,45,1),zi/mld)
+ylim([-2 0])

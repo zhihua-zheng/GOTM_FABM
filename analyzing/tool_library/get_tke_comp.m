@@ -41,12 +41,19 @@ function tke_comps = get_tke_comp(model_par, out, rotate_w)
 %    one is the minimum of w_w.
 
 %% Read relevant variables
-q2 = 2*out.tke; 
+z = mean(out.z,2);
+Z = out.z;
+T = repmat(out.time',size(Z,1),1);
+NN_stable = out.NN; % buoyancy frequency
+
+% sacrifice data at both end of z-direction, staggered grid
+Zi = out.zi(2:end-1,:);
+Ti = repmat(out.time',size(Zi,1),1);
+L = out.L(2:end-1,:);
+q2 = 2*out.tke(2:end-1,:); 
 q = sqrt(q2); % turbulent velocity scale [m/s]
 
 rescale_r = model_par.rescale_r;
-dt = model_par.dt;
-nsave = model_par.nsave;
 A1 = model_par.A1;
 B1 = model_par.B1;
 g = 9.81;
@@ -54,13 +61,9 @@ g = 9.81;
 % divided by (-rho_0) to get thermal expanison coefficient (positive)
 alpha = - model_par.dtr0/model_par.rho_0; 
 
-%% Rotation of coordinate and deal with staggered grid
+%% Rotation of coordinate
 
-% This interpolation approach may need to be modified in future
-Zi = out.zi;
-Ti = repmat(out.time',size(Zi,1),1);
-Z = out.z;
-T = repmat(out.time',size(Z,1),1);
+% The interpolation approach has been changed to use center_diff instead
     
 if rotate_w
     
@@ -71,18 +74,14 @@ if rotate_w
      u_stokes = new_vec.u_stokes;
      v_stokes = new_vec.v_stokes;
 else
-    u = interp2(T,Z,out.u,Ti,Zi,'linear');
-    v = interp2(T,Z,out.v,Ti,Zi,'linear');
-    u_stokes = interp2(T,Z,out.u_stokes,Ti,Zi,'linear');
-    v_stokes = interp2(T,Z,out.v_stokes,Ti,Zi,'linear');
+    u = out.u;
+    v = out.v;
+    u_stokes = out.u_stokes;
+    v_stokes = out.v_stokes;
 end
-
-temp = interp2(T,Z,out.temp,Ti,Zi,'linear');
 
 %% Rescale l/q under stable stratification
 
-L = out.L;
-NN_stable = out.NN; % buoyancy frequency
 NN_stable(NN_stable<0) = NaN;
 N = sqrt(NN_stable);
 N = interp2(T,Z,N,Ti,Zi,'linear');
@@ -96,20 +95,15 @@ if rescale_r
 end
 
 %% Eulerian shear
-[~, u_z] = gradient(u,dt*nsave,out.z);
-[~, v_z] = gradient(v,dt*nsave,out.z);
+u_z = center_diff(u,z,1);
+v_z = center_diff(v,z,1);
 
 %% Stokes shear
-[~, uStokes_z] = gradient(u_stokes,dt*nsave,out.z);
-[~, vStokes_z] = gradient(v_stokes,dt*nsave,out.z);
-
-%% Temperature gradient
-[~, temp_z] = gradient(temp,dt*nsave,out.z);
+uStokes_z = center_diff(u_stokes,z,1);
+vStokes_z = center_diff(v_stokes,z,1);
 
 %% Turbulence fluxes
-u_w = -(out.nu_m.*u_z + out.nu_cl.*uStokes_z);
-v_w = -(out.nu_m.*v_z + out.nu_cl.*vStokes_z);
-theta_w = -(out.nu_h.*temp_z);
+[u_w, v_w, theta_w] = get_turb_flux(out,1);
 
 %% Computation
 

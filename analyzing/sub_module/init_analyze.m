@@ -34,7 +34,7 @@ end
 
 %% --------- general analyzing options ------------------------------------
 
-mld_smooth = 0; % choose to smooth mixed layer depth or not
+mld_smooth = 1; % choose to smooth mixed layer depth or not
 
 
 %% --------- load file ----------------------------------------------------
@@ -58,9 +58,9 @@ h = mean(out.h,2);
 %% -------- general plotting specification info ---------------------------
 
 if (time(end) - time(1)) < 4  % less than 4 days
-    spec_info.timeformat = 'hh';
+    spec_info.timeformat = 'dd-hh';
 elseif (time(end) - time(1)) <= 30 % less than a month
-    spec_info.timeformat = 'dd';
+    spec_info.timeformat = 'mm-dd';
 elseif (time(end) - time(1)) <= 366 % less than a year
     spec_info.timeformat = 'mmm';
 else  % multiple years

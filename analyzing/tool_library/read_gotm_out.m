@@ -4,7 +4,7 @@ function  out = read_gotm_out(fname,order)
 %==========================================================================
 %
 % USAGE:
-%  out = read_gotm_out(fname,nsave)
+%  out = read_gotm_out(fname,order)
 %
 % DESCRIPTION:
 %  Read the output variables from GOTM simulation netCDF file (fname)

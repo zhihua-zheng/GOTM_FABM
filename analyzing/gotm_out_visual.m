@@ -138,7 +138,7 @@ spec_info.clim = [];
 spec_info.clabel = 'potential temperature ($$^{\circ}C$$)';
 spec_info.color = 'haline';
 spec_info.plot_method = 1;
-spec_info.ylim = [zi(1), 0];
+spec_info.ylim = [zi(70), 0];
 spec_info.save = 1;
 spec_info.save_path = './figs/temp';
 
@@ -192,7 +192,7 @@ spec_info.save = 0;
 spec_info.save_path = './figs/length';
 spec_info.clabel = 'length scale ($$m$$)';
 spec_info.ylabel = 'depth (m)';
-spec_info.ylim = [zi(80) 0];
+spec_info.ylim = [zi(70) 0];
 spec_info.plot_method = 1;
 
 plot_time_depth(time,zi,out.L,spec_info)

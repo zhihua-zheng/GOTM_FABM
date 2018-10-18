@@ -26,17 +26,11 @@ function new_vec = rotate_coor(out)
 
 %% Read relevant variables
 
-% This interpolation approach may need to be modified in future
-
-Zi = out.zi;
-Ti = repmat(out.time',size(Zi,1),1);
-Z = out.z;
-T = repmat(out.time',size(Z,1),1);
-
-u = interp2(T,Z,out.u,Ti,Zi,'linear');
-v = interp2(T,Z,out.v,Ti,Zi,'linear');
-u_stokes = interp2(T,Z,out.u_stokes,Ti,Zi,'linear');
-v_stokes = interp2(T,Z,out.v_stokes,Ti,Zi,'linear');
+% The interpolation approach has been changed to use center_diff instead
+u = out.u;
+v = out.v;
+u_stokes = out.u_stokes;
+v_stokes = out.v_stokes;
 
 %% Computation
 
@@ -63,11 +57,5 @@ for t = 1:length(out.time)
     new_vec.u_stokes(:,t) = cur(1,:);
     new_vec.v_stokes(:,t) = cur(2,:);
 end
-
-% new_vec.u = u_new;
-% new_vec.v = v_new;
-% new_vec.u_stokes = u_stokes_new;
-% new_vec.v_stokes = v_stokes_new;
-
 
 end
