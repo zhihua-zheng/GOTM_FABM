@@ -8,13 +8,17 @@ clear
 
 %% gather data info using dialog box
 
-prompt = {'GOTM root directory path:','Output directory path:',...
+prompt = {'GOTMRUN root directory path:','Specific output path:',...
     'Closure method used:','Time step (dt) used:',...
     'Saving period (nsave) used:'};
 title = 'Specify Output Data Information';
 dims = [1 100];
-definput = {'~/Documents/GitLab/GOTM_dev/',...
-    'run/Idealized_Hurricane_Experiment/Idealized_Hurricane_SMCLT_20110401-20110404/STORAGE',...
+
+tmp = pwd;
+run_dir = extractAfter(tmp,'run/');
+clear tmp
+
+definput = {'~/Documents/GitLab/GOTM_dev/run/',char(run_dir),...
     'SMCLT','60','60'};
 data_info = inputdlg(prompt,title,dims,definput);
 
@@ -53,7 +57,7 @@ time = out.time;
 
 z = mean(out.z,2);
 zi = mean(out.zi,2);
-h = mean(out.h,2);
+h = mean(out.h,2); % layer thickness
 
 %% -------- general plotting specification info ---------------------------
 
@@ -62,7 +66,7 @@ if (time(end) - time(1)) < 4  % less than 4 days
 elseif (time(end) - time(1)) <= 30 % less than a month
     spec_info.timeformat = 'mm-dd';
 elseif (time(end) - time(1)) <= 366 % less than a year
-    spec_info.timeformat = 'mmm';
+    spec_info.timeformat = 'mm/yyyy';
 else  % multiple years
     spec_info.timeformat = 'yyyy'; 
 end
