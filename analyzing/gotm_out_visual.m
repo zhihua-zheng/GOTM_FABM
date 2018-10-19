@@ -138,7 +138,7 @@ spec_info.clim = [];
 spec_info.clabel = 'potential temperature ($$^{\circ}C$$)';
 spec_info.color = 'haline';
 spec_info.plot_method = 1;
-spec_info.ylim = [zi(70), 0];
+spec_info.ylim = [zi(1), 0];
 spec_info.save = 1;
 spec_info.save_path = './figs/temp';
 
@@ -164,25 +164,7 @@ plot_time_depth(time,z,temp-temp_obs,spec_info)
 
 
 %% SST
-
-sst = out.sst;
-sst_obs = out.sst_obs;
-sst_from_prof = temp(128,:)';
-
-figure('position', [0, 0, 900, 300])
-line(time,sst_from_prof,'LineWidth',.8,'Color',[.6 .4 .2])
-line(time,sst_obs,'LineWidth',.8,'Color',[.3 .6 .4])
-
-spec_info.grid_on = 0;
-spec_info.x_time = 1;
-spec_info.lgd = 1;
-spec_info.lgd_label = {'SMCLT','observation'};
-spec_info.ylabel = 'sea surface temperature ($$^{\circ}C$$)';
-spec_info.save = 1;
-spec_info.save_path = './figs/sst';
-
-line_annotate(time,spec_info)
-
+do_sst_analysis;
 
 %% length scale
 
@@ -192,7 +174,7 @@ spec_info.save = 0;
 spec_info.save_path = './figs/length';
 spec_info.clabel = 'length scale ($$m$$)';
 spec_info.ylabel = 'depth (m)';
-spec_info.ylim = [zi(70) 0];
+spec_info.ylim = [zi(1) 0];
 spec_info.plot_method = 1;
 
 plot_time_depth(time,zi,out.L,spec_info)
