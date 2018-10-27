@@ -6,11 +6,12 @@
 
 %% ----- specify model parameters -----------------------------------------
 model_par.dtr0 = -0.2; % derivative of density w.r.t. temperature
+model_par.dsr0 = 0.78; % derivative of density w.r.t. salinity
 model_par.A1 = 0.92;
 model_par.B1 = 16.6;
 model_par.rho_0 = 1027; % reference density of seawater
-model_par.dt = dt;
-model_par.nsave = nsave;
+% model_par.dt = dt;
+% model_par.nsave = nsave;
 model_par.rescale_r = 1;
 
 %% ----- computation ------------------------------------------------------
@@ -23,7 +24,7 @@ tke_comps(tke_comps<0) = NaN;
 u_star2 = sqrt(out.tx.^2 + out.ty.^2);
 
 % normalize TKE components by water-side friction velocity
-tke_comps_n = tke_comps./(repmat(u_star2',length(zi),1,3));
+tke_comps_n = tke_comps./(repmat(u_star2',length(zi(2:end-1)),1,3));
 
 %% ----- plot evolution of column -----------------------------------------
 spec_info.ylabel = 'depth ($$m$$)';
@@ -72,3 +73,33 @@ end
 
 plot(tke_comps_n(:,45,1),zi/mld)
 ylim([-2 0])
+
+%% ---- averaged vertical rms velocity .vs. friction velocity -------------
+ww_ml = average_ml(mld,tke_comps(:,:,3),zi,mld_smooth);
+
+figure('position', [0, 0, 500, 480])
+
+scatter(sqrt(u_star2),sqrt(ww_ml),40,rgb('turquoise'),'s');
+
+h_ref = refline(1.07,0);
+h_ref.Color = [.4 .4 .4];
+h_ref.LineWidth = 1.5;
+% boundedline((0:23),hr_tr,hr_tr_error,...
+%     'orientation','vert','alpha','transparency',0.4,'cmap',rand(1,3));
+
+v_lim = max(max([u_star2;ww_ml]));
+xlim([0 1.01*v_lim])
+ylim([0 1.01*v_lim])
+
+axis square
+box on
+grid on
+
+xlabel('friction velocity $$u_*$$', 'fontname',...
+    'computer modern', 'fontsize', 28,'Interpreter', 'latex')
+ylabel('vertical velocity $$w_{rms}$', 'fontname',...
+    'computer modern', 'fontsize', 28,'Interpreter', 'latex')
+setDateAxes(gca,'fontsize',20,'fontname','computer modern',...
+    'XMinorTick','on','YMinorTick','on','TickLabelInterpreter','latex')
+
+% export_fig('./figs/w_ustar','-eps','-transparent','-painters')

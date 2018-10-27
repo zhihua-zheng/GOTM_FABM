@@ -1,6 +1,6 @@
 function phi = angle_h15(out, rotate_w)
 
-% spf
+% angle_h15
 %==========================================================================
 %
 % USAGE:
@@ -25,27 +25,11 @@ function phi = angle_h15(out, rotate_w)
 %  October 22 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 %
 
-%% Read relevant variables
-z = mean(out.z,2);
-
-%% Rotation of coordinate
-if rotate_w
-    
-     new_vec = rotate_coor(out);
-
-     u_stokes = new_vec.u_stokes;
-     v_stokes = new_vec.v_stokes;
-else
-    u_stokes = out.u_stokes;
-    v_stokes = out.v_stokes;
-end
-
-%% Stokes shear
-uStokes_z = center_diff(u_stokes,z,1);
-vStokes_z = center_diff(v_stokes,z,1);
+%% Get vertical gradients of Stokes drift
+[~, ~, uStokes_z, vStokes_z, ~, ~] = get_z_gradient(out,rotate_w);
 
 %% Turbulence fluxes
-[u_w, v_w, ~] = get_turb_flux(out,rotate_w);
+[u_w, v_w, ~, ~] = get_turb_flux(out,rotate_w);
 
 %% Computation
 

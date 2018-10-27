@@ -1,6 +1,6 @@
 function qS = CL_weight(out, q, rotate_w)
 
-% spf
+% CL_weight
 %==========================================================================
 %
 % USAGE:
@@ -13,7 +13,7 @@ function qS = CL_weight(out, q, rotate_w)
 % INPUT:
 %
 %  out - A struct containing all the model output from GOTM
-%  q - A matrix (t,d) containing the quantity to be weighted-averaged
+%  q - A matrix (t,z) containing the quantity to be weighted-averaged
 %  rotata_w - 1 or 0 (1 represents rotating current according to wind to 
 %    get downwind and crosswind component)
 %
@@ -40,7 +40,7 @@ else
     v_stokes = out.v_stokes;
 end
 
-%% %% Stokes shear
+%% Stokes shear
 uStokes_z = center_diff(u_stokes,z,1);
 vStokes_z = center_diff(v_stokes,z,1);
 

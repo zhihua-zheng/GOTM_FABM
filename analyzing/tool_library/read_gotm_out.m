@@ -20,7 +20,7 @@ function  out = read_gotm_out(fname,order)
 %
 % AUTHOR:
 %  Sep.  2 2018. Zhihua Zheng                           [ zhihua@uw.edu ]
-%  Oct. 20 2018, neglect first value in time dimesion.
+%  Oct. 20 2018. Neglect first value in time dimesion.
 
 
 %% general_info

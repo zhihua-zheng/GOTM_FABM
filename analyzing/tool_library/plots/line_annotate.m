@@ -46,8 +46,8 @@ end
 
 ylabel(spec_info.ylabel, 'fontname',...
     'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-setDateAxes(gca,'fontsize',11,...
-  'fontname','computer modern','TickLabelInterpreter','latex')
+setDateAxes(gca,'fontsize',11,'fontname','computer modern',...
+    'XMinorTick','on','TickLabelInterpreter','latex')
 
 % save figure or not
 if spec_info.save

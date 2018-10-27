@@ -4,7 +4,7 @@ function tke_comps = get_tke_comp(model_par, out, rotate_w)
 %==========================================================================
 %
 % USAGE:
-%  tke_comps = get_tke_comp(model_par, u_w, v_w, theta_w, out)
+%  tke_comps = get_tke_comp(model_par, out, rotate_w)
 
 %
 % DESCRIPTION:
@@ -15,10 +15,9 @@ function tke_comps = get_tke_comp(model_par, out, rotate_w)
 % INPUT:
 %
 %  model_par - A struct containing parameters used in the model
-%  u_w - turbulent x-momentum flux [m^2/s^2]
-%  v_w - turbulent y-momentum flux [m^2/s^2]
-%  theta_w - turbulent heat flux [K*m/s]
 %  out - A struct containing all the model output from GOTM
+%  rotata_w - 1 or 0 (1 represents rotating current according to wind to 
+%    get downwind and crosswind component)
 %
 % OUTPUT:
 %
@@ -42,13 +41,15 @@ function tke_comps = get_tke_comp(model_par, out, rotate_w)
 
 %% Read relevant variables
 z = mean(out.z,2);
-Z = out.z;
-T = repmat(out.time',size(Z,1),1);
-NN_stable = out.NN; % buoyancy frequency
+
+% Z = out.z;
+% T = repmat(out.time',size(Z,1),1);
+% NN = out.NN; % buoyancy frequency
 
 % sacrifice data at both end of z-direction, staggered grid
-Zi = out.zi(2:end-1,:);
-Ti = repmat(out.time',size(Zi,1),1);
+
+% Zi = out.zi(2:end-1,:);
+% Ti = repmat(out.time',size(Zi,1),1);
 L = out.L(2:end-1,:);
 q2 = 2*out.tke(2:end-1,:); 
 q = sqrt(q2); % turbulent velocity scale [m/s]
@@ -61,30 +62,26 @@ g = 9.81;
 % divided by (-rho_0) to get thermal expanison coefficient (positive)
 alpha = - model_par.dtr0/model_par.rho_0; 
 
-%% Rotation of coordinate
+% divided by (-rho_0) to get saline expanison coefficient (positive)
+belta =  model_par.dsr0/model_par.rho_0; 
 
-% The interpolation approach has been changed to use center_diff instead
-    
-if rotate_w
-    
-     new_vec = rotate_coor(out);
+%% Get vertical gradients
+[u_z, v_z, uStokes_z, vStokes_z, temp_z, salt_z] = ...
+    get_z_gradient(out,rotate_w);
 
-     u = new_vec.u;
-     v = new_vec.v;
-     u_stokes = new_vec.u_stokes;
-     v_stokes = new_vec.v_stokes;
-else
-    u = out.u;
-    v = out.v;
-    u_stokes = out.u_stokes;
-    v_stokes = out.v_stokes;
-end
+%% Turbulence fluxes
+[u_w, v_w, theta_w, s_w] = get_turb_flux(out,rotate_w);
 
 %% Rescale l/q under stable stratification
 
-NN_stable(NN_stable<0) = NaN;
-N = sqrt(NN_stable);
-N = interp2(T,Z,N,Ti,Zi,'linear');
+% avoid using the NN output, the grid level is not aligned with L ...
+% compute the NN from temperature and salinity gradient instead.
+
+NN = g*(alpha*temp_z - belta*salt_z);
+
+NN(NN<0) = NaN;
+N = sqrt(NN);
+% N = interp2(T,Z,N,Ti,Zi,'linear');
 
 l_over_q = L./q; % time scale for turbulence
 r_Ozm = 0.53./N; % time scale cooresponding to Ozmidov length scale 
@@ -94,29 +91,28 @@ if rescale_r
     l_over_q(l_over_q > r_Ozm) = r_Ozm(l_over_q > r_Ozm);
 end
 
-%% Eulerian shear
-u_z = center_diff(u,z,1);
-v_z = center_diff(v,z,1);
+%% Surface proximity function
+fS = spf(out,rotate_w);
 
-%% Stokes shear
-uStokes_z = center_diff(u_stokes,z,1);
-vStokes_z = center_diff(v_stokes,z,1);
-
-%% Turbulence fluxes
-[u_w, v_w, theta_w] = get_turb_flux(out,1);
+%% Angle of horizontal unit vector
+phi = angle_h15(out,rotate_w);
+phi = repmat(phi,size(fS,1),1);
 
 %% Computation
 
-% TO-DO: update the formula according to H15, surface proximity function
+% TO-DO: incorporate turbulent salinity fluxes
 
 % u_u
-tke_comps(:,:,1) = q2*(1-6*A1/B1)/3 - (6*A1*l_over_q).*(u_w.*u_z);
+tke_comps(:,:,1) = q2*(1-6*A1/B1)/3 - (6*A1*l_over_q).*(u_w.*u_z + ...
+    (sin(phi)).^2.*fS.*(u_w.*uStokes_z + v_w.*vStokes_z));
 
 % v_v
-tke_comps(:,:,2) = q2*(1-6*A1/B1)/3 - (6*A1*l_over_q).*(v_w.*v_z);
+tke_comps(:,:,2) = q2*(1-6*A1/B1)/3 - (6*A1*l_over_q).*(v_w.*v_z + ...
+    (cos(phi)).^2.*fS.*(u_w.*uStokes_z + v_w.*vStokes_z));
 
 % w_w
 tke_comps(:,:,3) = q2*(1-6*A1/B1)/3 + (6*A1*l_over_q).*(alpha*g*theta_w...
-    -u_w.*uStokes_z - v_w.*vStokes_z);
+    - belta*g*s_w + (fS-1).*(u_w.*uStokes_z + v_w.*vStokes_z));
+
 
 end
