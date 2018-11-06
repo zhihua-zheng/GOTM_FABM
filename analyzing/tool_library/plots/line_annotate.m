@@ -1,10 +1,10 @@
-function   line_annotate(x, spec_info)
+function   line_annotate(spec_info)
 
 % line_annotate
 %==========================================================================
 %
 % USAGE:
-%  line_annotate(x, spec_info)
+%  line_annotate(spec_info)
 %
 % DESCRIPTION:
 %  Function to annotate a line plot
@@ -20,37 +20,66 @@ function   line_annotate(x, spec_info)
 % AUTHOR:
 %  September 4 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 
-
 box on
 
+%% Grid option ------------------------------------------------------------
 if spec_info.grid_on
     
     grid on
+    set(gca,'gridlinestyle','--')
 end
 
-if spec_info.x_time
-
-    datetick('x',spec_info.timeformat)
-    setDateAxes(gca,'XLim',[x(1) x(end)],'fontsize',11,...
-      'fontname','computer modern','TickLabelInterpreter','latex')
-else 
-    xlabel(spec_info.xlabel, 'fontname',...
-    'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-end
-
-if spec_info.lgd
+%% Label x axis -----------------------------------------------------------
+if ~isempty(spec_info.xlabel)
     
-    lgd = legend(spec_info.lgd_label,'Location','best');
-    set(lgd,'Interpreter','latex','fontsize', 14)
+    if strcmp(spec_info.xlabel, 'time')
+        datetick('x',spec_info.timeformat)
+    else 
+        xlabel(spec_info.xlabel, 'fontname',...
+        'computer modern', 'fontsize', 18,'Interpreter', 'latex')    
+    end
 end
 
-ylabel(spec_info.ylabel, 'fontname',...
-    'computer modern', 'fontsize', 14,'Interpreter', 'latex')
-setDateAxes(gca,'fontsize',11,'fontname','computer modern',...
-    'XMinorTick','on','TickLabelInterpreter','latex')
+%% Label y axis -----------------------------------------------------------
+if ~isempty(spec_info.ylabel)
+    ylabel(spec_info.ylabel, 'fontname',...
+        'computer modern', 'fontsize', 18,'Interpreter', 'latex')
+end
 
-% save figure or not
-if spec_info.save
+%% X-Y limit --------------------------------------------------------------
+if ~isempty(spec_info.x_lim) 
+    
+    % use setDateAxes() instead of set() to be compatible with time axes
+    setDateAxes(gca,'XLim',spec_info.x_lim,...
+        'fontsize',18,'fontname','computer modern',...
+        'XMinorTick','on','TickLabelInterpreter','latex')
+else
+    setDateAxes(gca,'fontsize',18,'fontname','computer modern',...
+        'XMinorTick','on','TickLabelInterpreter','latex')
+end
+
+
+if ~isempty(spec_info.y_lim)   
+    set(gca,'YLim',spec_info.y_lim,'YMinorTick','on')
+else
+    set(gca,'YMinorTick','on')
+end
+    
+%% Legend -----------------------------------------------------------------
+if ~isempty(spec_info.lgd)
+    
+    if ~isempty(spec_info.lgd_pos)
+        pos = spec_info.lgd_pos;
+    else
+        pos = 'best';
+    end
+    
+    lgd = legend(spec_info.lgd,'Location',pos);
+    set(lgd,'Interpreter','latex','fontsize', 20)
+end
+
+%% Save option ------------------------------------------------------------
+if ~isempty(spec_info.save_path)
     
     export_fig(spec_info.save_path,'-eps','-transparent','-painters')
 end

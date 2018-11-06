@@ -28,7 +28,7 @@ function   plot_time_depth(t, d, scalar, spec_info)
 if isempty(spec_info.clim)
     
     CL = [min(min(scalar)) max(max(scalar))];  % default option
-elseif isstring(spec_info.clim) && spec_info.clim == 'symmetric'
+elseif strcmp(spec_info.clim,'symmetric')
     
     tmp1 = min(min(scalar));
     tmp2 = max(max(scalar));
@@ -81,7 +81,7 @@ cmocean(spec_info.color)
   set(h,'TickLabelInterpreter','latex','fontsize',9);
 
 %% save or not ------------------------------------------------------------
-if spec_info.save
+if ~isempty(spec_info.save_path)
     
   set(gca,'LooseInset', get(gca,'TightInset')); % no blank edge
   saveas(gcf, spec_info.save_path, 'epsc');

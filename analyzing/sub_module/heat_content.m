@@ -31,15 +31,16 @@ line([time(end) time(end)],[0 int_total(end)/10^(6)],'Color',...
 
 % figure specification
 spec_info.grid_on = 1;
-spec_info.lgd = 1;
-spec_info.lgd_label = {'total heat exchange','surface heat flux',...
-    'short wave radiation'};
-spec_info.x_time = 1;
+spec_info.xlabel = 'time';
 spec_info.ylabel = 'integrated heat ($MJ/m^{2}$)';
-spec_info.save = 1;
+spec_info.x_lim = [time(1) time(end)];
+spec_info.y_lim = [];
+spec_info.lgd = {'total heat exchange','surface heat flux',...
+    'short wave radiation'};
+spec_info.lgd_pos = [];
 spec_info.save_path = './figs/int_heat';
 
-line_annotate(time,spec_info)
+line_annotate(spec_info)
 %--------------------------------------------------------------------------
 
 
@@ -95,14 +96,12 @@ line([time(end) time(end)],[HC(1)/10^(6) HC(end)/10^(6)],'Color',...
 %     'Interpreter','latex','fontsize',13)
   
 % figure specification
-spec_info.lgd_label = {[turb_method,' HC'],'surface heat exchange','obs. HC'};
+spec_info.lgd = {[turb_method,' HC'],'surface heat exchange','obs. HC'};
 spec_info.ylabel = 'heat content ($MJ/m^{2}$)';
-spec_info.save = 1;
 spec_info.save_path = './figs/HC';
 
-line_annotate(time,spec_info)  
+line_annotate(spec_info)  
 %--------------------------------------------------------------------------
-
 
 %% Plot temporal variation of heat content ---------------------------------
 
@@ -113,13 +112,12 @@ line(time,HC_t,'LineWidth',1,'Color',[.4 .9 .7])
 line(time,zeros(size(time)),'LineWidth',.6,'Color',[.5 .5 .5],'LineStyle',':')
  
 % figure specification
-spec_info.lgd_label = {'surface heat exchange rate',...
+spec_info.lgd = {'surface heat exchange rate',...
     ['$\partial_{t}HC$ in ',turb_method]};
 spec_info.ylabel = 'temporal heat variation ($W/m^{2}$)';
-spec_info.save = 1;
 spec_info.save_path = './figs/HC_t_surf';
 
-line_annotate(time,spec_info)
+line_annotate(spec_info)
 
 %--------
 figure('position', [0, 0, 900, 300])
@@ -128,10 +126,9 @@ line(time,HC_t_obs,'LineWidth',1,'Color','k')
 line(time,HC_t,'LineWidth',1,'Color',[.4 .9 .7])
 line(time,zeros(size(time)),'LineWidth',.6,'Color',[.5 .5 .5],'LineStyle',':')
 
-spec_info.lgd_label = {'$\partial_{t}HC$ in obs.', ...
+spec_info.lgd = {'$\partial_{t}HC$ in obs.', ...
     ['$\partial_{t}HC$ in ',turb_method]};
 spec_info.ylabel = 'temporal heat variation ($W/m^{2}$)';
-spec_info.save = 1;
 spec_info.save_path = './figs/HC_t_obs';
 
-line_annotate(time,spec_info)
+line_annotate(spec_info)

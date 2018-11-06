@@ -49,8 +49,7 @@ end
 cur_a(ml_mask(end,:) == 0) = 0; % avoid NaN when mld is 0
 
 % temporal evolution of current vector vertex
-
-hodogram_t(time, cur_a)
+hodogram_t(time,cur_a,0)
   
 %------- FFT power spectral density estimate ------------------------------
 
@@ -139,7 +138,6 @@ spec_info.clabel = 'potential temperature ($$^{\circ}C$$)';
 spec_info.color = 'haline';
 spec_info.plot_method = 1;
 spec_info.ylim = [zi(1), 0];
-spec_info.save = 1;
 spec_info.save_path = './figs/temp';
 
 plot_time_depth(time,z,temp,spec_info)
@@ -148,7 +146,6 @@ plot_time_depth(time,z,temp,spec_info)
 spec_info.clim = [min(min(temp)) max(max(temp))];
 spec_info.clabel = 'obs. potential temperature ($$^{\circ}C$$)';
 spec_info.color = 'haline';
-spec_info.save = 1;
 spec_info.save_path = './figs/temp_obs';
 
 plot_time_depth(time,z,temp_obs,spec_info)
@@ -157,7 +154,7 @@ plot_time_depth(time,z,temp_obs,spec_info)
 spec_info.clim = 'symmetric';
 spec_info.clabel = 'temperature diffence ($$^{\circ}C$$)';
 spec_info.color = 'curl';
-spec_info.save = 0;
+spec_info.save_path = [];
 spec_info.save_path = './figs/temp_diff';
 
 plot_time_depth(time,z,temp-temp_obs,spec_info)
@@ -170,7 +167,6 @@ do_sst_analysis;
 
 spec_info.clim = [];
 spec_info.color = 'tempo';
-spec_info.save = 0;
 spec_info.save_path = './figs/length';
 spec_info.clabel = 'length scale ($$m$$)';
 spec_info.ylabel = 'depth (m)';
@@ -187,5 +183,4 @@ saveas(gcf, spec_info.save_path, 'epsc');
 
 % clean the white lines in the patch
 epsclean([spec_info.save_path,'.eps'],'closeGaps',true) 
-
 

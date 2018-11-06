@@ -1,10 +1,10 @@
-function hodogram_t(t, cur)
+function hodogram_t(t, cur, save_switch)
 
 % hodogram_t
 %==========================================================================
 %
 % USAGE:
-%  hodogram_t(t, cur)
+%  hodogram_t(t, cur, save_switch)
 %
 % DESCRIPTION:
 %  Function to generate a temporal hodogram for input velocity data
@@ -13,6 +13,7 @@ function hodogram_t(t, cur)
 %
 %  t - one dimensional array of date number
 %  cur - one dimensional array of velocity in complex form
+%  save_switch - 0 or 1 to specify if want the figure 
 %
 % OUTPUT:
 %
@@ -22,9 +23,9 @@ function hodogram_t(t, cur)
 %  September 6 2018. Zhihua Zheng                       [ zhihua@uw.edu ]
 
 
-t_int = t(t==floor(t)); % label only integer dyas
+t_int = t(t==floor(t)); % label only integer days
 
-color_mat = distinguishable_colors(length(t_int)-1); 
+color_mat = distinguishable_colors(length(t_int)); 
 % define discrete colormap
 
 figure('position', [0, 0, 480, 480])
@@ -42,25 +43,25 @@ hold on
 plot(cur,'Color',[.5 .6 .7],'LineStyle',':','LineWidth',.1)
 hold off 
 
-  xlim([-u_m u_m]) 
-  ylim([-v_m v_m])
-  grid on
   pbaspect([1 1 1]) % same scale for x, y
   h.Label.Interpreter = 'latex';
   h.Label.FontName = 'computer modern';
   h.Label.FontSize = 14;
   set(h,'TickLabelInterpreter','latex','fontsize',9);
-
     
 spec_info.grid_on = 0;
-spec_info.x_time = 0;
 spec_info.xlabel = 'u (m/s)';
 spec_info.ylabel = 'v (m/s)';
-spec_info.lgd = 0;
-spec_info.save = 1;
-spec_info.save_path = './figs/hodo';
+spec_info.x_lim = [-u_m u_m];
+spec_info.y_lim = [-v_m v_m];
+spec_info.lgd = [];
+if save_switch
+    spec_info.save_path = './figs/hodo';
+else
+    spec_info.save_path = [];
+end
 
-line_annotate([],spec_info)
+line_annotate(spec_info)
 
 end
 

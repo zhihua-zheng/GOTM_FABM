@@ -28,10 +28,11 @@ figure('position', [0, 0, 900, 300])
 line(time,-mld,'LineWidth',.4,'Color',[.2 .6 .9])
 
 spec_info.grid_on = 1;
-spec_info.x_time = 1;
-spec_info.lgd = 0;
+spec_info.x_lim = [];
+spec_info.y_lim = [];
+spec_info.xlabel = 'time';
 spec_info.ylabel = 'mixed layer depth (m)';
-spec_info.save = 1;
+spec_info.lgd = [];
 spec_info.save_path = './figs/mld';
 
-line_annotate(time,spec_info)
+line_annotate(spec_info)

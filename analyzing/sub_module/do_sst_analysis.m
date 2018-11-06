@@ -16,16 +16,15 @@ line(time,sst_from_prof,'LineWidth',.8,'Color',[.6 .4 .2])
 line(time,sst_obs,'LineWidth',.8,'Color',[.3 .6 .4])
 
 spec_info.grid_on = 1;
-spec_info.x_time = 1;
-spec_info.lgd = 1;
-spec_info.lgd_label = {'SMCLT','observation'};
+spec_info.xlabel = 'time';
 spec_info.ylabel = 'sea surface temperature ($$^{\circ}C$$)';
-spec_info.save = 0;
-spec_info.save_path = './figs/sst_line';
+spec_info.lgd = {'SMCLT','observation'};
+spec_info.save_path = [];
+%spec_info.save_path = './figs/sst_line';
 
-line_annotate(time,spec_info)
+line_annotate(spec_info)
 
-%% --------- scatter plot ------------------------------------------ 
+%% --------- scatter plot -------------------------------------------------
 
 figure('position', [0, 0, 450, 450])
 scatter(sst_obs,sst_from_prof,9,'filled')
