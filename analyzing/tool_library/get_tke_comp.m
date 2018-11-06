@@ -40,7 +40,6 @@ function tke_comps = get_tke_comp(model_par, out, rotate_w)
 %    one is the minimum of w_w.
 
 %% Read relevant variables
-z = mean(out.z,2);
 
 % Z = out.z;
 % T = repmat(out.time',size(Z,1),1);

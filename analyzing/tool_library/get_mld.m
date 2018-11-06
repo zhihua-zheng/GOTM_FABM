@@ -25,7 +25,7 @@ function mld = get_mld(rho, z)
 
 sigma = rho - 1000;
 d_sig = 1.01*sigma(end,:);  %% 0.01 criteria
-mld = zeros(size(d_sig));
+mld = zeros(size(d_sig'));
 
 where_mld = sigma - repmat(d_sig,length(z),1);
 

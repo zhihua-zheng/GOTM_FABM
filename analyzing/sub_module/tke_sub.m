@@ -10,8 +10,6 @@ model_par.dsr0 = 0.78; % derivative of density w.r.t. salinity
 model_par.A1 = 0.92;
 model_par.B1 = 16.6;
 model_par.rho_0 = 1027; % reference density of seawater
-% model_par.dt = dt;
-% model_par.nsave = nsave;
 model_par.rescale_r = 1;
 
 %% ----- computation ------------------------------------------------------
@@ -21,7 +19,8 @@ tke_comps = get_tke_comp(model_par,out,1);
 tke_comps(tke_comps<0) = NaN;
 
 % water-side friction velocity square
-u_star2 = sqrt(out.tx.^2 + out.ty.^2);
+u_star2 = out.u_taus.^2;
+u_star = out.u_taus;
 
 % normalize TKE components by water-side friction velocity
 tke_comps_n = tke_comps./(repmat(u_star2',length(zi(2:end-1)),1,3));
@@ -34,7 +33,6 @@ spec_info.clabel = '$$\overline{w^{\prime}w^{\prime}}/u_{*}^{2}$$';
 spec_info.color = 'tempo';
 spec_info.plot_method = 3;
 spec_info.ylim = [zi(1), 0];
-spec_info.save = 1;
 spec_info.save_path = './figs/ww_norm';
 
 % z-direction TKE
@@ -62,44 +60,58 @@ plot_time_depth(time,zi,tke_n,spec_info)
 
 % TO-DO: how to choos the averaging length?
 
-del_t = 3; % box length ~ 3 hours
-new_t_length = floor(length(time)/del_t);
-tke_comps_n_av = nan(length(zi),new_t_length,3);
-
-for i = 1:new_t_length
-    
-    tke_comps_n_av(:,i,:) = nanmean(tke_comps_n(:,(i-1)*del_t+1:i*del_t,:),2);
-end
-
-plot(tke_comps_n(:,45,1),zi/mld)
-ylim([-2 0])
+% del_t = 3; % box length ~ 3 hours
+% new_t_length = floor(length(time)/del_t);
+% tke_comps_n_av = nan(length(zi),new_t_length,3);
+% 
+% for i = 1:new_t_length
+%     
+%     tke_comps_n_av(:,i,:) = nanmean(tke_comps_n(:,(i-1)*del_t+1:i*del_t,:),2);
+% end
+% 
+% plot(tke_comps_n(:,45,1),zi/mld)
+% ylim([-2 0])
 
 %% ---- averaged vertical rms velocity .vs. friction velocity -------------
 ww_ml = average_ml(mld,tke_comps(:,:,3),zi,mld_smooth);
+w_rms = sqrt(ww_ml);
 
 figure('position', [0, 0, 500, 480])
 
-scatter(sqrt(u_star2),sqrt(ww_ml),40,rgb('turquoise'),'s');
+scatter(u_star,w_rms,50,'s','MarkerFaceColor',...
+    rgb('light turquoise'),'MarkerEdgeColor',[.5 .5 .5]);
+hold on
+v_lim = max(max([u_star w_rms]));
+
+inx_good = ~isnan(w_rms);
+sl = u_star(inx_good)\w_rms(inx_good);
+h_fit = plot((0:.01:v_lim),sl*(0:.01:v_lim),'Color',...
+    rgb('turquoise'),'LineWidth',1.5);
 
 h_ref = refline(1.07,0);
-h_ref.Color = [.4 .4 .4];
-h_ref.LineWidth = 1.5;
+set(h_ref,'Color',[.2 .2 .2],'LineWidth',1.5,'LineStyle','--');
+
+
+xlim([0 1.15*v_lim])
+ylim([0 1.15*v_lim])
+xticks([0 .05 .1 .15 .2])
+yticks([0 .05 .1 .15 .2])
 % boundedline((0:23),hr_tr,hr_tr_error,...
 %     'orientation','vert','alpha','transparency',0.4,'cmap',rand(1,3));
-
-v_lim = max(max([u_star2;ww_ml]));
-xlim([0 1.01*v_lim])
-ylim([0 1.01*v_lim])
-
+    
 axis square
 box on
 grid on
+
+lgd = legend([h_fit h_ref],{['slope = ',num2str(round(sl,2))],...
+    'slope = 1.07'},'Location','east');
+set(lgd,'Interpreter','latex','fontsize', 22)
 
 xlabel('friction velocity $$u_*$$', 'fontname',...
     'computer modern', 'fontsize', 28,'Interpreter', 'latex')
 ylabel('vertical velocity $$w_{rms}$', 'fontname',...
     'computer modern', 'fontsize', 28,'Interpreter', 'latex')
-setDateAxes(gca,'fontsize',20,'fontname','computer modern',...
+set(gca,'fontsize',20,'fontname','computer modern','gridlinestyle','--',...
     'XMinorTick','on','YMinorTick','on','TickLabelInterpreter','latex')
 
-% export_fig('./figs/w_ustar','-eps','-transparent','-painters')
+export_fig('./figs/w_ustar','-eps','-transparent','-painters')
